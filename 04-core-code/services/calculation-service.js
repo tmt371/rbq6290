@@ -344,6 +344,10 @@ export class CalculationService {
         const gstValue = summaryData.new_gst;
         const grandTotal = summaryData.grandTotal; // This value is already correct (newOffer + actual_gst)
 
+        // [NEW v6290 Task 3] Get correct Deposit/Balance from F2 state, not rough calculation
+        const depositValue = ui.f2.deposit;
+        const balanceValue = ui.f2.balance;
+
         const items = quoteData.products.rollerBlind.items;
         const formatPrice = (price) => (typeof price === 'number' && price > 0) ? `$${price.toFixed(2)}` : '';
 
@@ -385,8 +389,9 @@ export class CalculationService {
             gst: `$${gstValue.toFixed(2)}`,
 
             grandTotal: `$${grandTotal.toFixed(2)}`,
-            deposit: `$${(grandTotal * 0.5).toFixed(2)}`,
-            balance: `$${(grandTotal * 0.5).toFixed(2)}`,
+            // [MODIFIED v6290 Task 3] Use correct values from F2 state
+            deposit: `$${(depositValue || 0).toFixed(2)}`,
+            balance: `$${(balanceValue || 0).toFixed(2)}`,
 
             savings: `$${((summaryData.firstRbPrice || 0) - (summaryData.disRbPrice || 0)).toFixed(2)}`,
             generalNotes: (f3Data.generalNotes || '').replace(/\n/g, '<br>'),

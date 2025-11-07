@@ -77,7 +77,7 @@ export class QuoteGeneratorService {
                     setTimeout(() => {
                         try {
                             const inlinedHtml = getInlinedHtml();
-                            
+                           
                             navigator.clipboard.writeText(inlinedHtml)
                                 .then(() => {
                                     alert('HTML with inlined styles copied to clipboard successfully!');
@@ -111,18 +111,18 @@ export class QuoteGeneratorService {
 
             const getInlinedHtmlForGmail = () => {
                 const clone = document.documentElement.cloneNode(true);
-                
-                // --- 修正標題複製問題 (Phase 3, Step A) ---
+   
+                // --- ä¿®æ­£æ¨™é?è¤‡è£½? é? (Phase 3, Step A) ---
                 clone.querySelector('title')?.remove();
                 
-                // 移除 <style> 標籤 (GTH 模板樣式已內聯)
+                // ç§»é™¤ <style> æ¨™ç±¤ (GTH æ¨¡æ ¿æ¨??å·²å…§??
                 clone.querySelectorAll('style').forEach(s => s.remove());
                 
-                // 移除操作按鈕和腳本
+                // ç§»é™¤? ä??‰é??Œè…³??
                 clone.querySelector('#action-bar')?.remove();
                 clone.querySelectorAll('script').forEach(s => s.remove());
 
-                // 返回 HTML 和 純文本
+                // è¿”å? HTML ??ç´”æ???
                 return {
                     html: '<!DOCTYPE html>' + clone.outerHTML,
                     text: clone.innerText || clone.textContent
@@ -138,23 +138,29 @@ export class QuoteGeneratorService {
                         try {
                             const { html, text } = getInlinedHtmlForGmail();
 
-                            // --- 修正手機貼上問題 (Phase 3, Step A) ---
-                            // 必須同時建立 text/html 和 text/plain 兩種 Blob
+                         
+                            // --- ä¿®æ­£?‹æ?è²¼ä?? é? (Phase 3, Step A) ---
+                            // å¿…é??Œæ?å»ºç? text/html ??text/plain ?©ç¨® Blob
                             navigator.clipboard.write([
+                         
                                 new ClipboardItem({
                                     'text/html': new Blob([html], { type: 'text/html' }),
                                     'text/plain': new Blob([text], { type: 'text/plain' })
+     
                                 })
                             ]).then(() => {
                                 alert('Quote copied to clipboard (Rich Text)!');
-                            }).catch(err => {
+                             }).catch(err => {
                                 console.error('Failed to copy rich text:', err);
                                 // Fallback to text copy if rich text fails
+                        
                                 navigator.clipboard.writeText(text).then(() => {
                                     alert('Rich text copy failed. Copied as plain text.');
                                 }).catch(err2 => {
+          
                                     console.error('Fallback text copy failed:', err2);
                                     alert('Failed to copy. Please check console.');
+                          
                                 });
                             });
 
@@ -209,16 +215,26 @@ export class QuoteGeneratorService {
         let finalHtml = this._populateTemplate(this.gmailTemplate, {
             ...templateData,
             // GTH template uses different placeholders for summary
+            // [MODIFIED] v6290 Bind to correct F2 values
             total: templateData.grandTotal,
             deposit: templateData.deposit,
             balance: templateData.balance,
+
             // Ensure customer info is formatted
             customerInfoHtml: this._formatCustomerInfo(templateData),
             // Ensure item list is formatted
             itemsTableBody: this._generatePageOneItemsTableHtml(templateData)
         });
 
-        // 3. Inject the GTH script
+        // 3. [NEW v6290 Task 2] Remove GST row if gstExcluded is true
+        if (templateData.uiState.f2.gstExcluded) {
+            // This regex finds the <tr> that contains the GST label and removes it
+            const gstRowRegex = /<tr[^>]*>[\s\S]*?<td[^>]*>[\s\S]*?GST[\s\S]*?<\/td>[\s\S]*?<\/tr>/i;
+            finalHtml = finalHtml.replace(gstRowRegex, '');
+        }
+
+
+        // 4. Inject the GTH script
         finalHtml = finalHtml.replace(
             '</body>',
             `${this.scriptHtmlGmail}</body>`
@@ -312,31 +328,37 @@ export class QuoteGeneratorService {
             .filter(item => item.width && item.height)
             .map((item, index) => {
 
+
                 let fabricClass = '';
                 if (item.fabric && item.fabric.toLowerCase().includes('light-filter')) {
                     fabricClass = 'bg-light-filter';
                 } else if (item.fabricType === 'SN') {
                     fabricClass = 'bg-screen';
+
                 } else if (['B1', 'B2', 'B3', 'B4', 'B5'].includes(item.fabricType)) {
                     fabricClass = 'bg-blockout';
                 }
 
                 const finalPrice = (item.linePrice || 0) * mulTimes;
 
+
                 const cell = (dataLabel, content, cssClass = '') => {
                     const isEmpty = !content;
                     const finalClass = `${cssClass} ${isEmpty ? 'is-empty-cell' : ''}`.trim();
                     return `<td data-label="${dataLabel}" class="${finalClass}">${content}</td>`;
+
                 };
 
                 const cells = [
                     cell('#', index + 1, 'text-center'),
                     cell('F-NAME', item.fabric || '', fabricClass),
                     cell('F-COLOR', item.color || '', fabricClass),
+
                     cell('Location', item.location || ''),
-                    cell('HD', item.winder === 'HD' ? '??' : '', 'text-center'),
-                    cell('Dual', item.dual === 'D' ? '??' : '', 'text-center'),
-                    cell('Motor', item.motor ? '??' : '', 'text-center'),
+                    cell('HD', item.winder === 'HD' ? '✔' : '', 'text-center'),
+                    cell('Dual', item.dual === 'D' ? '✔' : '', 'text-center'),
+
+                    cell('Motor', item.motor ? '✔' : '', 'text-center'),
                     cell('Price', `$${finalPrice.toFixed(2)}`, 'text-right')
                 ].join('');
 
@@ -347,24 +369,29 @@ export class QuoteGeneratorService {
         return `
             <table class="detailed-list-table">
                 <colgroup>
+      
                     <col style="width: 5%;">
                     <col style="width: 20%;">
                     <col style="width: 15%;">
                     <col style="width: 12%;">
+               
                     <col style="width: 9%;">
                     <col style="width: 9%;">
                     <col style="width: 9%;">
                     <col style="width: 13%;">
                 </colgroup>
+        
                 <thead>
                     <tr class="table-title">
                         <th colspan="${headers.length}">Roller Blinds - Detailed List</th>
                     </tr>
+                   
                     <tr>
                         ${headers.map(h => `<th>${h}</th>`).join('')}
                     </tr>
                 </thead>
                 <tbody>
+                  
                     ${rows}
                 </tbody>
             </table>
@@ -376,84 +403,131 @@ export class QuoteGeneratorService {
         const rows = [];
         const validItemCount = items.filter(i => i.width && i.height).length;
 
-        rows.push(`
-            <tr>
-                <td data-label="NO">1</td>
-                <td data-label="Description" class="description">Roller Blinds</td>
-                <td data-label="QTY" class="align-right">${validItemCount}</td>
-                <td data-label="Price" class="align-right">
-                    <span class="original-price">$${(summaryData.firstRbPrice || 0).toFixed(2)}</span>
-                </td>
-                <td data-label="Discounted Price" class="align-right">
-                    <span class="discounted-price">$${(summaryData.disRbPrice || 0).toFixed(2)}</span>
-                </td>
-            </tr>
-        `);
+        // [MODIFIED v6290] Use new helper function to build rows
+        const createRow = (number, description, qty, price, discountedPrice, isExcluded = false) => {
+            const priceStyle = isExcluded ? 'style="text-decoration: line-through; color: #999999;"' : '';
+            const discountedPriceValue = isExcluded ? 0 : discountedPrice;
+            const discountedPriceStyle = (discountedPrice < price) ? 'style="font-weight: bold; color: #d32f2f;"' : '';
 
-        let itemNumber = 2;
+            return `
+                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+                    style="border-collapse: collapse; margin-bottom: 15px; border: 1px solid #e0e0e0; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                    <tbody>
+                        <tr>
+                            <td
+                                style="padding: 10px 15px; border-bottom: 1px solid #e0e0e0; background-color: #1a237e; color: white; border-radius: 4px 4px 0 0;">
+                                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="color: white;">
+                                    <tr>
+                                        <td width="50%" valign="top" style="text-align: left; font-weight: bold;">#${number}</td>
+                                        <td width="50%" valign="top" style="text-align: right; font-weight: normal;">${description}</td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px 15px; border-bottom: 1px solid #e0e0e0;">
+                                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                    <tr>
+                                        <td width="50%" valign="top" style="text-align: left; font-weight: 600;">QTY</td>
+                                        <td width="50%" valign="top" style="text-align: right;">${qty}</td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px 15px; border-bottom: 1px solid #e0e0e0;">
+                                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                    <tr>
+                                        <td width="50%" valign="top" style="text-align: left; font-weight: 600;">Price</td>
+                                        <td width="50%" valign="top" style="text-align: right;">
+                                            <span ${priceStyle}>$${price.toFixed(2)}</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px 15px;">
+                                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                    <tr>
+                                        <td width="50%" valign="top" style="text-align: left; font-weight: 600;">Discounted Price</td>
+                                        <td width="50%" valign="top" style="text-align: right;">
+                                            <span ${discountedPriceStyle}>$${discountedPriceValue.toFixed(2)}</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+        };
 
+        let itemNumber = 1;
+
+        // Row 1: Roller Blinds
+        rows.push(createRow(
+            itemNumber++,
+            'Roller Blinds',
+            validItemCount,
+            summaryData.firstRbPrice || 0,
+            summaryData.disRbPrice || 0
+        ));
+
+        // Row 2: Accessories (Optional)
         if (summaryData.acceSum > 0) {
-            rows.push(`
-                <tr>
-                    <td data-label="NO">${itemNumber++}</td>
-                    <td data-label="Description" class="description">Installation Accessories</td>
-                    <td data-label="QTY" class="align-right">NA</td>
-                    <td data-label="Price" class="align-right">$${(summaryData.acceSum || 0).toFixed(2)}</td>
-                    <td data-label="Discounted Price" class="align-right">$${(summaryData.acceSum || 0).toFixed(2)}</td>
-                </tr>
-            `);
+            rows.push(createRow(
+                itemNumber++,
+                'Installation Accessories',
+                'NA',
+                summaryData.acceSum || 0,
+                summaryData.acceSum || 0
+            ));
         }
 
+        // Row 3: Motorised (Optional)
         if (summaryData.eAcceSum > 0) {
-            rows.push(`
-                <tr>
-                    <td data-label="NO">${itemNumber++}</td>
-                    <td data-label="Description" class="description">Motorised Accessories</td>
-                    <td data-label="QTY" class="align-right">NA</td>
-                    <td data-label="Price" class="align-right">$${(summaryData.eAcceSum || 0).toFixed(2)}</td>
-                    <td data-label="Discounted Price" class="align-right">$${(summaryData.eAcceSum || 0).toFixed(2)}</td>
-                </tr>
-            `);
+            rows.push(createRow(
+                itemNumber++,
+                'Motorised Accessories',
+                'NA',
+                summaryData.eAcceSum || 0,
+                summaryData.eAcceSum || 0
+            ));
         }
 
+        // Row 4: Delivery
         const deliveryExcluded = uiState.f2.deliveryFeeExcluded;
-        const deliveryPriceClass = deliveryExcluded ? 'class="align-right is-excluded"' : 'class="align-right"';
-        const deliveryDiscountedPrice = deliveryExcluded ? 0 : (summaryData.deliveryFee || 0);
-        rows.push(`
-            <tr>
-                <td data-label="NO">${itemNumber++}</td>
-                <td data-label="Description" class="description">Delivery</td>
-                <td data-label="QTY" class="align-right">${uiState.f2.deliveryQty || 1}</td>
-                <td data-label="Price" ${deliveryPriceClass}>$${(summaryData.deliveryFee || 0).toFixed(2)}</td>
-                <td data-label="Discounted Price" class="align-right">$${deliveryDiscountedPrice.toFixed(2)}</td>
-            </tr>
-        `);
+        rows.push(createRow(
+            itemNumber++,
+            'Delivery',
+            uiState.f2.deliveryQty || 1,
+            summaryData.deliveryFee || 0,
+            summaryData.deliveryFee || 0,
+            deliveryExcluded
+        ));
 
+        // Row 5: Installation
         const installExcluded = uiState.f2.installFeeExcluded;
-        const installPriceClass = installExcluded ? 'class="align-right is-excluded"' : 'class="align-right"';
-        const installDiscountedPrice = installExcluded ? 0 : (summaryData.installFee || 0);
-        rows.push(`
-            <tr>
-                <td data-label="NO">${itemNumber++}</td>
-                <td data-label="Description" class="description">Installation</td>
-                <td data-label="QTY" class="align-right">${validItemCount}</td>
-                <td data-label="Price" ${installPriceClass}>$${(summaryData.installFee || 0).toFixed(2)}</td>
-                <td data-label="Discounted Price" class="align-right">$${installDiscountedPrice.toFixed(2)}</td>
-            </tr>
-        `);
+        rows.push(createRow(
+            itemNumber++,
+            'Installation',
+            validItemCount, // Use valid item count for install QTY
+            summaryData.installFee || 0,
+            summaryData.installFee || 0,
+            installExcluded
+        ));
 
+        // Row 6: Removal
         const removalExcluded = uiState.f2.removalFeeExcluded;
-        const removalPriceClass = removalExcluded ? 'class="align-right is-excluded"' : 'class="align-right"';
-        const removalDiscountedPrice = removalExcluded ? 0 : (summaryData.removalFee || 0);
-        rows.push(`
-            <tr>
-                <td data-label="NO">${itemNumber++}</td>
-                <td data-label="Description" class="description">Removal</td>
-                <td data-label="QTY" class="align-right">${uiState.f2.removalQty || 0}</td>
-                <td data-label="Price" ${removalPriceClass}>$${(summaryData.removalFee || 0).toFixed(2)}</td>
-                <td data-label="Discounted Price" class="align-right">$${removalDiscountedPrice.toFixed(2)}</td>
-            </tr>
-        `);
+        rows.push(createRow(
+            itemNumber++,
+            'Removal',
+            uiState.f2.removalQty || 0,
+            summaryData.removalFee || 0,
+            summaryData.removalFee || 0,
+            removalExcluded
+        ));
 
         return rows.join('');
     }
