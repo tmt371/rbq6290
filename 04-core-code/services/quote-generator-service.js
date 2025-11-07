@@ -255,7 +255,7 @@ export class QuoteGeneratorService {
     }
 
     /**
-     * [UNCHANGED] (Phase 3, Step D) Generates the full HTML for PDF/Print.
+     * Generates the full HTML for PDF/Print.
      */
     generateQuoteHtml(quoteData, ui, f3Data) {
         if (!this.quoteTemplate || !this.detailsTemplate) {
@@ -263,17 +263,30 @@ export class QuoteGeneratorService {
             return null;
         }
 
-        // [REFACTORED] Delegate all data preparation to CalculationService.
+        // 1. Delegate all data preparation to CalculationService.
         const templateData = this.calculationService.getQuoteTemplateData(quoteData, ui, f3Data);
 
-        // [REFACTORED] Generate HTML snippets using the prepared data.
+        // 2. [NEW v6290 Task 2] Conditionally create the GST row HTML for the *Original Table*
+        let gstRowHtml = '';
+        if (!templateData.uiState.f2.gstExcluded) {
+            gstRowHtml = `
+                <tr> 
+                    <td class="summary-label">GST (10%)</td> 
+                    <td class="summary-value">${templateData.gst}</td>
+                </tr>
+            `;
+        }
+
+        // 3. Generate HTML snippets using the prepared data.
         const populatedDataWithHtml = {
             ...templateData,
             customerInfoHtml: this._formatCustomerInfo(templateData),
             itemsTableBody: this._generatePageOneItemsTableHtml(templateData),
-            rollerBlindsTable: this._generateItemsTableHtml(templateData)
+            rollerBlindsTable: this._generateItemsTableHtml(templateData),
+            gstRowHtml: gstRowHtml // [NEW] Pass the conditional GST row
         };
 
+        // 4. Populate templates
         const populatedDetailsPageHtml = this._populateTemplate(this.detailsTemplate, populatedDataWithHtml);
 
         const styleMatch = populatedDetailsPageHtml.match(/<style>([\s\S]*)<\/style>/i);
@@ -290,7 +303,7 @@ export class QuoteGeneratorService {
         finalHtml = finalHtml.replace('</body>', `${detailsBodyContent}</body>`);
         finalHtml = this._populateTemplate(finalHtml, populatedDataWithHtml);
 
-        // Inject the action bar and script into the final HTML
+        // 5. Inject the action bar and script into the final HTML
         finalHtml = finalHtml.replace(
             '<body>',
             `<body>${this.actionBarHtml}`
@@ -418,6 +431,7 @@ export class QuoteGeneratorService {
         const createRow = (number, description, qty, price, discountedPrice, isExcluded = false) => {
             const priceStyle = isExcluded ? 'style="text-decoration: line-through; color: #999999;"' : '';
             const discountedPriceValue = isExcluded ? 0 : discountedPrice;
+            // [MODIFIED] Show red only if discount is applied
             const discountedPriceStyle = (discountedPrice < price) ? 'style="font-weight: bold; color: #d32f2f;"' : '';
 
             return `
