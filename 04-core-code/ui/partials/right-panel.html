@@ -184,24 +184,25 @@
             <input type="number" class="grid-cell-input" id="new-offer" value="0.00" onfocus="this.select();">
 
             <div></div>
-            <div class="grid-cell-label" id="f2-label-gst" style="justify-content: flex-end; padding-right: 10px;">GST
+            <div class_comment="[MODIFIED] v6290 Task 5: Red border wrapper">
+                <div class="grid-span-3 final-total-wrapper">
+                    <div class="section-header text-red">Total</div>
+                    <div class="grid-cell-value section-header-total" id="grand-total">$0.00</div>
+
+                    <div class="grid-cell-label">NET Profit</div>
+                    <div class="grid-cell-value" id="f2-b25-netprofit"></div>
+                    <div class="grid-cell-placeholder"></div>
+
+                    <div class="grid-cell-placeholder"></div>
+                    <div class="grid-cell-label text-right">Deposit</div>
+                    <input type="number" class="grid-cell-input bg-light-green" id="f2-deposit"
+                        onfocus="this.select();">
+
+                    <div class="grid-cell-placeholder"></div>
+                    <div class="grid-cell-label text-right">Balance</div>
+                    <input type="number" class="grid-cell-input bg-light-orange" id="f2-balance" readonly>
+                </div>
             </div>
-            <div class="grid-cell-value" id="f2-b24-gst"></div>
-            <div class="section-header text-red">Total</div>
-            <div class="grid-cell-value section-header-total" id="grand-total">$0.00</div>
-
-            <div class="grid-cell-label">NET Profit</div>
-            <div class="grid-cell-value" id="f2-b25-netprofit"></div>
-
-            <div></div>
-
-            <div class="grid-cell-label">Deposit</div>
-            <input type="number" class="grid-cell-input bg-light-green" id="f2-deposit" onfocus="this.select();">
-            <div class="grid-cell-placeholder"></div>
-
-            <div class="grid-cell-label">Balance</div>
-            <input type="number" class="grid-cell-input bg-light-orange" id="f2-balance" readonly>
-            <div class="grid-cell-placeholder"></div>
 
         </div>
     </div>

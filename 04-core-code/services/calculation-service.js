@@ -106,6 +106,7 @@ export class CalculationService {
             return productStrategy[methodName](...args);
         }
 
+
         return 0;
     }
 
@@ -163,6 +164,7 @@ export class CalculationService {
         const f1KeyMap = {
             'winder': 'cost-winder',
             'motor': 'cost-motor',
+
             'remote-1ch': 'remoteSingleChannel',
             'remote-16ch': 'remoteMultiChannel16',
             'charger': 'charger',
@@ -173,6 +175,7 @@ export class CalculationService {
 
         const accessoryKey = f1KeyMap[componentKey];
         if (!accessoryKey) {
+
             console.error(`No accessory key found for F1 component: ${componentKey}`);
             return 0;
         }
@@ -249,6 +252,7 @@ export class CalculationService {
 
         const f1ComponentTotal =
             this.calculateF1ComponentPrice('winder', winderQtyF1) +
+
             this.calculateF1ComponentPrice('motor', motorQtyF1) +
             this.calculateF1ComponentPrice('remote-1ch', remote1chQtyF1) +
             this.calculateF1ComponentPrice('remote-16ch', remote16chQtyF1) +
@@ -279,15 +283,20 @@ export class CalculationService {
 
         // [MODIFIED] (Phase 11) Calculate *both* potential and actual GST
         const potential_gst = newOffer * 0.1; // The value to display
+
         const actual_gst = f2State.gstExcluded ? 0 : potential_gst; // The value to use in calculations
 
         const grandTotal = newOffer + actual_gst; // [MODIFIED] Uses actual_gst
 
-        const netProfit = grandTotal - f1_final_total; // `netProfit` is now based on `grandTotal`
+        // [MODIFIED v6290 Task 1 & 2] netProfit logic now depends on gstExcluded state
+        const netProfit = f2State.gstExcluded
+            ? grandTotal - f1SubTotal
+            : grandTotal - f1_final_total;
 
         return {
             totalSumForRbTime: totalSumFromQuickQuote,
             wifiSum,
+
             deliveryFee,
             installFee,
             removalFee,
@@ -296,6 +305,7 @@ export class CalculationService {
             firstRbPrice,
             disRbPrice,
             sumPrice, // (new value for f2-b22)
+
             rbProfit,
             singleprofit,
 
@@ -303,12 +313,14 @@ export class CalculationService {
             sumProfit: sumProfit, // (for f2-b23 - will be removed in Phase 3)
             gst: old_gst, // (for getQuoteTemplateData compatibility - will be removed in Phase 4)
 
+
             // --- New values (for Phase 2+) ---
             f2_17_pre_sum: f2_17_pre_sum,
             newOffer: newOffer,
             new_gst: potential_gst, // [MODIFIED] Always return the potential_gst for display
             grandTotal: grandTotal,
             netProfit: netProfit, // (new value for f2-b25)
+
 
             mulTimes // [FIX] Add mulTimes to the return object so its value can be persisted.
         };
@@ -322,6 +334,7 @@ export class CalculationService {
      * @param {object} f3Data - Data from the F3 form fields.
      * @returns {object} A comprehensive data object ready for template population.
      */
+
     getQuoteTemplateData(quoteData, ui, f3Data) {
         const summaryData = this.calculateF2Summary(quoteData, ui);
 
@@ -363,6 +376,7 @@ export class CalculationService {
             issueDate: f3Data.issueDate,
             dueDate: f3Data.dueDate,
             customerName: f3Data.customerName, // [NEW] Added for direct access in template
+
             customerAddress: f3Data.customerAddress, // [NEW]
             customerPhone: f3Data.customerPhone, // [NEW]
             customerEmail: f3Data.customerEmail, // [NEW]
@@ -370,6 +384,7 @@ export class CalculationService {
             // [MODIFIED] (Phase 4) All totals are now based on the new grandTotal
             subtotal: `$${(summaryData.sumPrice || 0).toFixed(2)}`,
             gst: `$${gstValue.toFixed(2)}`,
+
             grandTotal: `$${grandTotal.toFixed(2)}`,
             deposit: `$${(grandTotal * 0.5).toFixed(2)}`,
             balance: `$${(grandTotal * 0.5).toFixed(2)}`,
@@ -378,6 +393,7 @@ export class CalculationService {
             generalNotes: (f3Data.generalNotes || '').replace(/\n/g, '<br>'),
             termsAndConditions: (f3Data.termsConditions || 'Standard terms and conditions apply.').replace(/\n/g, '<br>'),
 
+
             // Data for the detailed list (Appendix)
             items: items,
             mulTimes: summaryData.mulTimes || 1,
@@ -385,6 +401,7 @@ export class CalculationService {
             // Data for the accessories table (Appendix)
             motorQty: motorQty || '',
             motorPrice: formatPrice(motorPrice),
+
             remote1chQty: remote1chQty || '',
             remote1chPrice: formatPrice(remote1chPrice),
             remote16chQty: remote16chQty || '',
@@ -392,6 +409,7 @@ export class CalculationService {
             chargerQty: chargerQty || '',
             chargerPrice: formatPrice(chargerPrice),
             cord3mQty: cord3mQty || '',
+
             cord3mPrice: formatPrice(cord3mPrice),
             eAcceSum: formatPrice(summaryData.eAcceSum),
 
