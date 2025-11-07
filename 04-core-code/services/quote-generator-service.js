@@ -209,12 +209,24 @@ export class QuoteGeneratorService {
         // 1. Get common data
         const templateData = this.calculationService.getQuoteTemplateData(quoteData, ui, f3Data);
 
-        // 2. Populate the GTH template
-        // Note: GTH template is self-contained and doesn't need appendix merging.
-        // We just need to replace the placeholders.
+        // 2. [NEW v6290 Task 2] Conditionally create the GST row HTML
+        let gstRowHtml = '';
+        if (!templateData.uiState.f2.gstExcluded) {
+            gstRowHtml = `
+                <tr>
+                    <td class="summary-label"
+                        style="padding: 8px 0; border: 1px solid #dddddd; font-size: 13.3px; text-align: right; padding-right: 20px; color: #555555;">
+                        GST</td>
+                    <td class="summary-value"
+                        style="padding: 8px 0; border: 1px solid #dddddd; font-size: 13.3px; text-align: right; font-weight: 500; padding-right: 10px;">
+                        ${templateData.gst}</td>
+                </tr>
+            `;
+        }
+
+        // 3. Populate the GTH template
         let finalHtml = this._populateTemplate(this.gmailTemplate, {
             ...templateData,
-            // GTH template uses different placeholders for summary
             // [MODIFIED] v6290 Bind to correct F2 values
             total: templateData.grandTotal,
             deposit: templateData.deposit,
@@ -223,18 +235,17 @@ export class QuoteGeneratorService {
             // Ensure customer info is formatted
             customerInfoHtml: this._formatCustomerInfo(templateData),
             // Ensure item list is formatted
-            itemsTableBody: this._generatePageOneItemsTableHtml(templateData)
+            itemsTableBody: this._generatePageOneItemsTableHtml(templateData),
+            // [NEW v6290 Task 2] Pass the conditional GST row
+            gstRowHtml: gstRowHtml
         });
 
-        // 3. [NEW v6290 Task 2] Remove GST row if gstExcluded is true
-        if (templateData.uiState.f2.gstExcluded) {
-            // This regex finds the <tr> that contains the GST label and removes it
-            const gstRowRegex = /<tr[^>]*>[\s\S]*?<td[^>]*>[\s\S]*?GST[\s\S]*?<\/td>[\s\S]*?<\/tr>/i;
-            finalHtml = finalHtml.replace(gstRowRegex, '');
-        }
+        // 4. [REMOVED v6290 Task 2] Remove the faulty regex replacement
+        // const gstRowRegex = /<tr[^>]*>[\s\S]*?<td[^>]*>[\s\S]*?GST[\s\S]*?<\/td>[\s\S]*?<\/tr>/i;
+        // finalHtml = finalHtml.replace(gstRowRegex, '');
 
 
-        // 4. Inject the GTH script
+        // 5. Inject the GTH script
         finalHtml = finalHtml.replace(
             '</body>',
             `${this.scriptHtmlGmail}</body>`
@@ -508,11 +519,12 @@ export class QuoteGeneratorService {
         ));
 
         // Row 5: Installation
+        // [MODIFIED v6290 Bug 1 Fix]
         const installExcluded = uiState.f2.installFeeExcluded;
         rows.push(createRow(
             itemNumber++,
             'Installation',
-            validItemCount, // Use valid item count for install QTY
+            uiState.f2.installQty || 0, // Use installQty from F2 state
             summaryData.installFee || 0,
             summaryData.installFee || 0,
             installExcluded
