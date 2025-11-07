@@ -252,7 +252,6 @@ export class CalculationService {
 
         const f1ComponentTotal =
             this.calculateF1ComponentPrice('winder', winderQtyF1) +
-
             this.calculateF1ComponentPrice('motor', motorQtyF1) +
             this.calculateF1ComponentPrice('remote-1ch', remote1chQtyF1) +
             this.calculateF1ComponentPrice('remote-16ch', remote16chQtyF1) +
