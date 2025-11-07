@@ -8865,6 +8865,7 @@ export const initialState = {
             'Price'],
         activeTabId: 'k1-tab',
 
+
         // --- Input & Selection State ---
         inputValue: '',
         inputMode: 'width',
@@ -8876,6 +8877,7 @@ export const initialState = {
 
         // --- Left Panel Edit Modes & States ---
         activeEditMode: null,
+
         targetCell: null,
         locationInputValue: '',
 
@@ -8888,6 +8890,7 @@ export const initialState = {
 
         // --- K5 (Dual/Chain) State ---
         dualChainMode: null,
+
         dualChainInputValue: '',
         dualPrice: null,
 
@@ -8901,6 +8904,7 @@ export const initialState = {
         driveWinderTotalPrice: null,
         driveMotorTotalPrice: null,
         driveRemoteTotalPrice: null,
+
         driveChargerTotalPrice: null,
         driveCordTotalPrice: null,
         driveGrandTotal: null,
@@ -8932,14 +8936,20 @@ export const initialState = {
 
             installFee: null, removalFee: null, deliveryFeeExcluded: false,
             installFeeExcluded: false, removalFeeExcluded: false, acceSum: null,
+
             eAcceSum: null, surchargeFee: null, totalSumForRbTime: null,
             firstRbPrice: null, disRbPrice: null, singleprofit: null,
             rbProfit: null,
             gst: null, netProfit: null,
+            // [v6290] Add Deposit and Balance
+            deposit: null,
+            balance: null,
+
             newOffer: null,
 
             // [FIX] Add missing keys from Phase 2
             f2_17_pre_sum: null,
+
             sumPrice: null,
             grandTotal: null,
 
@@ -8951,6 +8961,7 @@ export const initialState = {
         welcomeDialogShown: false
     },
     quoteData: {
+
         currentProduct: 'rollerBlind',
         products: {
             rollerBlind: {
@@ -8959,29 +8970,35 @@ export const initialState = {
                     {
                         itemId: `item-${Date.now()}`,
 
+
                         width: null, height: null, fabricType: null, linePrice: null,
                         location: '', fabric: '', color: '', over: '',
                         oi: '', lr: '', dual: '', chain: null,
+
                         winder: '',
                         motor: ''
                     }
                 ],
                 summary: {
+
                     totalSum: null,
 
                     accessories: {
                         winder: { count: 0, price: 0 },
                         motor: { count: 0, price: 0 },
 
+
                         remote: { type: 'standard', count: 0, price: 0 },
                         charger: { count: 0, price: 0 },
 
                         cord3m: { count: 0, price: 0 },
+
                         remoteCostSum: null,
                         winderCostSum: null,
 
                         motorCostSum: null,
                         chargerCostSum: null,
+
                         cordCostSum: null,
                     }
 
@@ -8989,7 +9006,8 @@ export const initialState = {
             }
         },
         // [ADDED] A new container for UI-related metadata that needs to be saved.
-        uiMetadata: {
+        uiMetadata:
+        {
             lfModifiedRowIndexes: []
         },
 
@@ -9001,6 +9019,7 @@ export const initialState = {
         customer: {
             name: "",
 
+
             address: "",
             phone: "",
             email: ""
@@ -9009,6 +9028,7 @@ export const initialState = {
         f1Snapshot: {
             // Main component quantities (calculated)
             winder_qty: null,
+
             motor_qty: null,
             charger_qty: null,
             cord_qty: null,
@@ -9016,6 +9036,7 @@ export const initialState = {
             remote_1ch_qty: null,
             remote_16ch_qty: null,
             dual_combo_qty: null,
+
             dual_slim_qty: null,
             // Financial values (from ui.f1)
             discountPercentage: null
@@ -9745,6 +9766,7 @@ export class CalculationService {
             return productStrategy[methodName](...args);
         }
 
+
         return 0;
     }
 
@@ -9802,6 +9824,7 @@ export class CalculationService {
         const f1KeyMap = {
             'winder': 'cost-winder',
             'motor': 'cost-motor',
+
             'remote-1ch': 'remoteSingleChannel',
             'remote-16ch': 'remoteMultiChannel16',
             'charger': 'charger',
@@ -9812,6 +9835,7 @@ export class CalculationService {
 
         const accessoryKey = f1KeyMap[componentKey];
         if (!accessoryKey) {
+
             console.error(`No accessory key found for F1 component: ${componentKey}`);
             return 0;
         }
@@ -9918,15 +9942,20 @@ export class CalculationService {
 
         // [MODIFIED] (Phase 11) Calculate *both* potential and actual GST
         const potential_gst = newOffer * 0.1; // The value to display
+
         const actual_gst = f2State.gstExcluded ? 0 : potential_gst; // The value to use in calculations
 
         const grandTotal = newOffer + actual_gst; // [MODIFIED] Uses actual_gst
 
-        const netProfit = grandTotal - f1_final_total; // `netProfit` is now based on `grandTotal`
+        // [MODIFIED v6290 Task 1 & 2] netProfit logic now depends on gstExcluded state
+        const netProfit = f2State.gstExcluded
+            ? grandTotal - f1SubTotal
+            : grandTotal - f1_final_total;
 
         return {
             totalSumForRbTime: totalSumFromQuickQuote,
             wifiSum,
+
             deliveryFee,
             installFee,
             removalFee,
@@ -9935,6 +9964,7 @@ export class CalculationService {
             firstRbPrice,
             disRbPrice,
             sumPrice, // (new value for f2-b22)
+
             rbProfit,
             singleprofit,
 
@@ -9942,12 +9972,14 @@ export class CalculationService {
             sumProfit: sumProfit, // (for f2-b23 - will be removed in Phase 3)
             gst: old_gst, // (for getQuoteTemplateData compatibility - will be removed in Phase 4)
 
+
             // --- New values (for Phase 2+) ---
             f2_17_pre_sum: f2_17_pre_sum,
             newOffer: newOffer,
             new_gst: potential_gst, // [MODIFIED] Always return the potential_gst for display
             grandTotal: grandTotal,
             netProfit: netProfit, // (new value for f2-b25)
+
 
             mulTimes // [FIX] Add mulTimes to the return object so its value can be persisted.
         };
@@ -9961,6 +9993,7 @@ export class CalculationService {
      * @param {object} f3Data - Data from the F3 form fields.
      * @returns {object} A comprehensive data object ready for template population.
      */
+
     getQuoteTemplateData(quoteData, ui, f3Data) {
         const summaryData = this.calculateF2Summary(quoteData, ui);
 
@@ -9970,6 +10003,10 @@ export class CalculationService {
         // [MODIFIED] (Phase 11) Use new_gst (potential) and grandTotal (calculated) from summaryData
         const gstValue = summaryData.new_gst;
         const grandTotal = summaryData.grandTotal; // This value is already correct (newOffer + actual_gst)
+
+        // [NEW v6290 Task 3] Get correct Deposit/Balance from F2 state, not rough calculation
+        const depositValue = ui.f2.deposit;
+        const balanceValue = ui.f2.balance;
 
         const items = quoteData.products.rollerBlind.items;
         const formatPrice = (price) => (typeof price === 'number' && price > 0) ? `$${price.toFixed(2)}` : '';
@@ -10002,6 +10039,7 @@ export class CalculationService {
             issueDate: f3Data.issueDate,
             dueDate: f3Data.dueDate,
             customerName: f3Data.customerName, // [NEW] Added for direct access in template
+
             customerAddress: f3Data.customerAddress, // [NEW]
             customerPhone: f3Data.customerPhone, // [NEW]
             customerEmail: f3Data.customerEmail, // [NEW]
@@ -10009,13 +10047,16 @@ export class CalculationService {
             // [MODIFIED] (Phase 4) All totals are now based on the new grandTotal
             subtotal: `$${(summaryData.sumPrice || 0).toFixed(2)}`,
             gst: `$${gstValue.toFixed(2)}`,
+
             grandTotal: `$${grandTotal.toFixed(2)}`,
-            deposit: `$${(grandTotal * 0.5).toFixed(2)}`,
-            balance: `$${(grandTotal * 0.5).toFixed(2)}`,
+            // [MODIFIED v6290 Task 3] Use correct values from F2 state
+            deposit: `$${(depositValue || 0).toFixed(2)}`,
+            balance: `$${(balanceValue || 0).toFixed(2)}`,
 
             savings: `$${((summaryData.firstRbPrice || 0) - (summaryData.disRbPrice || 0)).toFixed(2)}`,
             generalNotes: (f3Data.generalNotes || '').replace(/\n/g, '<br>'),
             termsAndConditions: (f3Data.termsConditions || 'Standard terms and conditions apply.').replace(/\n/g, '<br>'),
+
 
             // Data for the detailed list (Appendix)
             items: items,
@@ -10024,6 +10065,7 @@ export class CalculationService {
             // Data for the accessories table (Appendix)
             motorQty: motorQty || '',
             motorPrice: formatPrice(motorPrice),
+
             remote1chQty: remote1chQty || '',
             remote1chPrice: formatPrice(remote1chPrice),
             remote16chQty: remote16chQty || '',
@@ -10031,6 +10073,7 @@ export class CalculationService {
             chargerQty: chargerQty || '',
             chargerPrice: formatPrice(chargerPrice),
             cord3mQty: cord3mQty || '',
+
             cord3mPrice: formatPrice(cord3mPrice),
             eAcceSum: formatPrice(summaryData.eAcceSum),
 
@@ -10743,7 +10786,7 @@ export class QuoteGeneratorService {
                     setTimeout(() => {
                         try {
                             const inlinedHtml = getInlinedHtml();
-                            
+                           
                             navigator.clipboard.writeText(inlinedHtml)
                                 .then(() => {
                                     alert('HTML with inlined styles copied to clipboard successfully!');
@@ -10777,18 +10820,18 @@ export class QuoteGeneratorService {
 
             const getInlinedHtmlForGmail = () => {
                 const clone = document.documentElement.cloneNode(true);
-                
-                // --- ‰øÆÊ≠£Ê®ôÈ?Ë§áË£Ω?èÈ? (Phase 3, Step A) ---
+   
+                // --- √§¬ø¬Æ√¶¬≠¬£√¶¬®?¢√?√®¬§?°√®¬?? √©? (Phase 3, Step A) ---
                 clone.querySelector('title')?.remove();
                 
-                // ÁßªÈô§ <style> Ê®ôÁ±§ (GTH Ê®°ÊùøÊ®??Â∑≤ÂÖß??
+                // √ß¬ß¬ª√©?¢¬?<style> √¶¬®?¢√ß¬±¬?(GTH √¶¬®¬°√¶ ¬ø√¶¬®??√•¬∑¬≤√•?¶¬??
                 clone.querySelectorAll('style').forEach(s => s.remove());
                 
-                // ÁßªÈô§?ç‰??âÈ??åËÖ≥??
+                // √ß¬ß¬ª√©?¢¬? √§???∞√???√®?¶¬??
                 clone.querySelector('#action-bar')?.remove();
                 clone.querySelectorAll('script').forEach(s => s.remove());
 
-                // ËøîÂ? HTML ??Á¥îÊ???
+                // √®¬ø?ù√? HTML ??√ß¬¥?ù√???
                 return {
                     html: '<!DOCTYPE html>' + clone.outerHTML,
                     text: clone.innerText || clone.textContent
@@ -10804,23 +10847,29 @@ export class QuoteGeneratorService {
                         try {
                             const { html, text } = getInlinedHtmlForGmail();
 
-                            // --- ‰øÆÊ≠£?ãÊ?Ë≤º‰??èÈ? (Phase 3, Step A) ---
-                            // ÂøÖÈ??åÊ?Âª∫Á? text/html ??text/plain ?©Á®Æ Blob
+                         
+                            // --- √§¬ø¬Æ√¶¬≠¬£??π√?√®¬≤¬º√§?? √©? (Phase 3, Step A) ---
+                            // √•¬ø?¶√???√¶?√•¬ª¬∫√ß? text/html ??text/plain ?¬©√ß¬®¬Æ Blob
                             navigator.clipboard.write([
+                         
                                 new ClipboardItem({
                                     'text/html': new Blob([html], { type: 'text/html' }),
                                     'text/plain': new Blob([text], { type: 'text/plain' })
+     
                                 })
                             ]).then(() => {
                                 alert('Quote copied to clipboard (Rich Text)!');
-                            }).catch(err => {
+                             }).catch(err => {
                                 console.error('Failed to copy rich text:', err);
                                 // Fallback to text copy if rich text fails
+                        
                                 navigator.clipboard.writeText(text).then(() => {
                                     alert('Rich text copy failed. Copied as plain text.');
                                 }).catch(err2 => {
+          
                                     console.error('Fallback text copy failed:', err2);
                                     alert('Failed to copy. Please check console.');
+                          
                                 });
                             });
 
@@ -10869,22 +10918,43 @@ export class QuoteGeneratorService {
         // 1. Get common data
         const templateData = this.calculationService.getQuoteTemplateData(quoteData, ui, f3Data);
 
-        // 2. Populate the GTH template
-        // Note: GTH template is self-contained and doesn't need appendix merging.
-        // We just need to replace the placeholders.
+        // 2. [NEW v6290 Task 2] Conditionally create the GST row HTML
+        let gstRowHtml = '';
+        if (!templateData.uiState.f2.gstExcluded) {
+            gstRowHtml = `
+                <tr>
+                    <td class="summary-label"
+                        style="padding: 8px 0; border: 1px solid #dddddd; font-size: 13.3px; text-align: right; padding-right: 20px; color: #555555;">
+                        GST</td>
+                    <td class="summary-value"
+                        style="padding: 8px 0; border: 1px solid #dddddd; font-size: 13.3px; text-align: right; font-weight: 500; padding-right: 10px;">
+                        ${templateData.gst}</td>
+                </tr>
+            `;
+        }
+
+        // 3. Populate the GTH template
         let finalHtml = this._populateTemplate(this.gmailTemplate, {
             ...templateData,
-            // GTH template uses different placeholders for summary
+            // [MODIFIED] v6290 Bind to correct F2 values
             total: templateData.grandTotal,
             deposit: templateData.deposit,
             balance: templateData.balance,
+
             // Ensure customer info is formatted
             customerInfoHtml: this._formatCustomerInfo(templateData),
-            // Ensure item list is formatted
-            itemsTableBody: this._generatePageOneItemsTableHtml(templateData)
+            // [MODIFIED v6290 Task 1] Ensure item list is formatted
+            itemsTableBody: this._generatePageOneItemsTableHtml_GTH(templateData),
+            // [NEW v6290 Task 2] Pass the conditional GST row
+            gstRowHtml: gstRowHtml
         });
 
-        // 3. Inject the GTH script
+        // 4. [REMOVED v6290 Task 2] Remove the faulty regex replacement
+        // const gstRowRegex = /<tr[^>]*>[\s\S]*?<td[^>]*>[\s\S]*?GST[\s\S]*?<\/td>[\s\S]*?<\/tr>/i;
+        // finalHtml = finalHtml.replace(gstRowRegex, '');
+
+
+        // 5. Inject the GTH script
         finalHtml = finalHtml.replace(
             '</body>',
             `${this.scriptHtmlGmail}</body>`
@@ -10894,7 +10964,7 @@ export class QuoteGeneratorService {
     }
 
     /**
-     * [UNCHANGED] (Phase 3, Step D) Generates the full HTML for PDF/Print.
+     * Generates the full HTML for PDF/Print.
      */
     generateQuoteHtml(quoteData, ui, f3Data) {
         if (!this.quoteTemplate || !this.detailsTemplate) {
@@ -10902,17 +10972,31 @@ export class QuoteGeneratorService {
             return null;
         }
 
-        // [REFACTORED] Delegate all data preparation to CalculationService.
+        // 1. Delegate all data preparation to CalculationService.
         const templateData = this.calculationService.getQuoteTemplateData(quoteData, ui, f3Data);
 
-        // [REFACTORED] Generate HTML snippets using the prepared data.
+        // 2. [NEW v6290 Task 2] Conditionally create the GST row HTML for the *Original Table*
+        let gstRowHtml = '';
+        if (!templateData.uiState.f2.gstExcluded) {
+            gstRowHtml = `
+                <tr> 
+                    <td class="summary-label">GST (10%)</td> 
+                    <td class="summary-value">${templateData.gst}</td>
+                </tr>
+            `;
+        }
+
+        // 3. Generate HTML snippets using the prepared data.
         const populatedDataWithHtml = {
             ...templateData,
             customerInfoHtml: this._formatCustomerInfo(templateData),
-            itemsTableBody: this._generatePageOneItemsTableHtml(templateData),
-            rollerBlindsTable: this._generateItemsTableHtml(templateData)
+            // [MODIFIED v6290 Task 1] Use the single-table generator
+            itemsTableBody: this._generatePageOneItemsTableHtml_Original(templateData),
+            rollerBlindsTable: this._generateItemsTableHtml(templateData),
+            gstRowHtml: gstRowHtml // [NEW] Pass the conditional GST row
         };
 
+        // 4. Populate templates
         const populatedDetailsPageHtml = this._populateTemplate(this.detailsTemplate, populatedDataWithHtml);
 
         const styleMatch = populatedDetailsPageHtml.match(/<style>([\s\S]*)<\/style>/i);
@@ -10929,7 +11013,7 @@ export class QuoteGeneratorService {
         finalHtml = finalHtml.replace('</body>', `${detailsBodyContent}</body>`);
         finalHtml = this._populateTemplate(finalHtml, populatedDataWithHtml);
 
-        // Inject the action bar and script into the final HTML
+        // 5. Inject the action bar and script into the final HTML
         finalHtml = finalHtml.replace(
             '<body>',
             `<body>${this.actionBarHtml}`
@@ -10978,31 +11062,37 @@ export class QuoteGeneratorService {
             .filter(item => item.width && item.height)
             .map((item, index) => {
 
+
                 let fabricClass = '';
                 if (item.fabric && item.fabric.toLowerCase().includes('light-filter')) {
                     fabricClass = 'bg-light-filter';
                 } else if (item.fabricType === 'SN') {
                     fabricClass = 'bg-screen';
+
                 } else if (['B1', 'B2', 'B3', 'B4', 'B5'].includes(item.fabricType)) {
                     fabricClass = 'bg-blockout';
                 }
 
                 const finalPrice = (item.linePrice || 0) * mulTimes;
 
+
                 const cell = (dataLabel, content, cssClass = '') => {
                     const isEmpty = !content;
                     const finalClass = `${cssClass} ${isEmpty ? 'is-empty-cell' : ''}`.trim();
                     return `<td data-label="${dataLabel}" class="${finalClass}">${content}</td>`;
+
                 };
 
                 const cells = [
                     cell('#', index + 1, 'text-center'),
                     cell('F-NAME', item.fabric || '', fabricClass),
                     cell('F-COLOR', item.color || '', fabricClass),
+
                     cell('Location', item.location || ''),
-                    cell('HD', item.winder === 'HD' ? '??' : '', 'text-center'),
-                    cell('Dual', item.dual === 'D' ? '??' : '', 'text-center'),
-                    cell('Motor', item.motor ? '??' : '', 'text-center'),
+                    cell('HD', item.winder === 'HD' ? '?? : '', 'text-center'),
+                    cell('Dual', item.dual === 'D' ? '?? : '', 'text-center'),
+
+                    cell('Motor', item.motor ? '?? : '', 'text-center'),
                     cell('Price', `$${finalPrice.toFixed(2)}`, 'text-right')
                 ].join('');
 
@@ -11013,113 +11103,289 @@ export class QuoteGeneratorService {
         return `
             <table class="detailed-list-table">
                 <colgroup>
+      
                     <col style="width: 5%;">
                     <col style="width: 20%;">
                     <col style="width: 15%;">
                     <col style="width: 12%;">
+               
                     <col style="width: 9%;">
                     <col style="width: 9%;">
                     <col style="width: 9%;">
                     <col style="width: 13%;">
                 </colgroup>
+        
                 <thead>
                     <tr class="table-title">
                         <th colspan="${headers.length}">Roller Blinds - Detailed List</th>
                     </tr>
+                   
                     <tr>
                         ${headers.map(h => `<th>${h}</th>`).join('')}
                     </tr>
                 </thead>
                 <tbody>
+                  
                     ${rows}
                 </tbody>
             </table>
         `;
     }
 
-    _generatePageOneItemsTableHtml(templateData) {
+    // [NEW v6290 Task 1] This is the new function for "Original" (Add Quote)
+    // It generates a SINGLE table
+    _generatePageOneItemsTableHtml_Original(templateData) {
         const { summaryData, uiState, items } = templateData;
         const rows = [];
         const validItemCount = items.filter(i => i.width && i.height).length;
 
-        rows.push(`
-            <tr>
-                <td data-label="NO">1</td>
-                <td data-label="Description" class="description">Roller Blinds</td>
-                <td data-label="QTY" class="align-right">${validItemCount}</td>
-                <td data-label="Price" class="align-right">
-                    <span class="original-price">$${(summaryData.firstRbPrice || 0).toFixed(2)}</span>
-                </td>
-                <td data-label="Discounted Price" class="align-right">
-                    <span class="discounted-price">$${(summaryData.disRbPrice || 0).toFixed(2)}</span>
-                </td>
-            </tr>
-        `);
+        const createRow = (number, description, qty, price, discountedPrice, isExcluded = false) => {
+            const priceStyle = isExcluded ? 'style="text-decoration: line-through; color: #999999;"' : '';
+            const discountedPriceValue = isExcluded ? 0 : discountedPrice;
+            // [MODIFIED] Show red only if discount is applied
+            const discountedPriceStyle = (discountedPrice < price) ? 'style="font-weight: bold; color: #d32f2f;"' : '';
 
-        let itemNumber = 2;
+            return `
+                <tr>
+                    <td data-label="NO">${number}</td>
+                    <td data-label="Description" class="description">${description}</td>
+                    <td data-label="QTY" class="align-right">${qty}</td>
+                    <td data-label="Price" class="align-right">
+                        <span class="original-price" ${priceStyle}>$${price.toFixed(2)}</span>
+                    </td>
+                    <td data-label="Discounted Price" class="align-right">
+                        <span class="discounted-price" ${discountedPriceStyle}>$${discountedPriceValue.toFixed(2)}</span>
+                    </td>
+                </tr>
+            `;
+        };
 
+        let itemNumber = 1;
+
+        // Row 1: Roller Blinds
+        rows.push(createRow(
+            itemNumber++,
+            'Roller Blinds',
+            validItemCount,
+            summaryData.firstRbPrice || 0,
+            summaryData.disRbPrice || 0
+        ));
+
+        // Row 2: Accessories (Optional)
         if (summaryData.acceSum > 0) {
-            rows.push(`
-                <tr>
-                    <td data-label="NO">${itemNumber++}</td>
-                    <td data-label="Description" class="description">Installation Accessories</td>
-                    <td data-label="QTY" class="align-right">NA</td>
-                    <td data-label="Price" class="align-right">$${(summaryData.acceSum || 0).toFixed(2)}</td>
-                    <td data-label="Discounted Price" class="align-right">$${(summaryData.acceSum || 0).toFixed(2)}</td>
-                </tr>
-            `);
+            rows.push(createRow(
+                itemNumber++,
+                'Installation Accessories',
+                'NA',
+                summaryData.acceSum || 0,
+                summaryData.acceSum || 0
+            ));
         }
 
+        // Row 3: Motorised (Optional)
         if (summaryData.eAcceSum > 0) {
-            rows.push(`
-                <tr>
-                    <td data-label="NO">${itemNumber++}</td>
-                    <td data-label="Description" class="description">Motorised Accessories</td>
-                    <td data-label="QTY" class="align-right">NA</td>
-                    <td data-label="Price" class="align-right">$${(summaryData.eAcceSum || 0).toFixed(2)}</td>
-                    <td data-label="Discounted Price" class="align-right">$${(summaryData.eAcceSum || 0).toFixed(2)}</td>
-                </tr>
-            `);
+            rows.push(createRow(
+                itemNumber++,
+                'Motorised Accessories',
+                'NA',
+                summaryData.eAcceSum || 0,
+                summaryData.eAcceSum || 0
+            ));
         }
 
+        // Row 4: Delivery
         const deliveryExcluded = uiState.f2.deliveryFeeExcluded;
-        const deliveryPriceClass = deliveryExcluded ? 'class="align-right is-excluded"' : 'class="align-right"';
-        const deliveryDiscountedPrice = deliveryExcluded ? 0 : (summaryData.deliveryFee || 0);
-        rows.push(`
-            <tr>
-                <td data-label="NO">${itemNumber++}</td>
-                <td data-label="Description" class="description">Delivery</td>
-                <td data-label="QTY" class="align-right">${uiState.f2.deliveryQty || 1}</td>
-                <td data-label="Price" ${deliveryPriceClass}>$${(summaryData.deliveryFee || 0).toFixed(2)}</td>
-                <td data-label="Discounted Price" class="align-right">$${deliveryDiscountedPrice.toFixed(2)}</td>
-            </tr>
-        `);
+        rows.push(createRow(
+            itemNumber++,
+            'Delivery',
+            uiState.f2.deliveryQty || 1,
+            summaryData.deliveryFee || 0,
+            summaryData.deliveryFee || 0,
+            deliveryExcluded
+        ));
 
+        // Row 5: Installation
         const installExcluded = uiState.f2.installFeeExcluded;
-        const installPriceClass = installExcluded ? 'class="align-right is-excluded"' : 'class="align-right"';
-        const installDiscountedPrice = installExcluded ? 0 : (summaryData.installFee || 0);
-        rows.push(`
-            <tr>
-                <td data-label="NO">${itemNumber++}</td>
-                <td data-label="Description" class="description">Installation</td>
-                <td data-label="QTY" class="align-right">${validItemCount}</td>
-                <td data-label="Price" ${installPriceClass}>$${(summaryData.installFee || 0).toFixed(2)}</td>
-                <td data-label="Discounted Price" class="align-right">$${installDiscountedPrice.toFixed(2)}</td>
-            </tr>
-        `);
+        rows.push(createRow(
+            itemNumber++,
+            'Installation',
+            uiState.f2.installQty || 0, // Use installQty from F2 state
+            summaryData.installFee || 0,
+            summaryData.installFee || 0,
+            installExcluded
+        ));
 
+        // Row 6: Removal
         const removalExcluded = uiState.f2.removalFeeExcluded;
-        const removalPriceClass = removalExcluded ? 'class="align-right is-excluded"' : 'class="align-right"';
-        const removalDiscountedPrice = removalExcluded ? 0 : (summaryData.removalFee || 0);
-        rows.push(`
-            <tr>
-                <td data-label="NO">${itemNumber++}</td>
-                <td data-label="Description" class="description">Removal</td>
-                <td data-label="QTY" class="align-right">${uiState.f2.removalQty || 0}</td>
-                <td data-label="Price" ${removalPriceClass}>$${(summaryData.removalFee || 0).toFixed(2)}</td>
-                <td data-label="Discounted Price" class="align-right">$${removalDiscountedPrice.toFixed(2)}</td>
-            </tr>
-        `);
+        rows.push(createRow(
+            itemNumber++,
+            'Removal',
+            uiState.f2.removalQty || 0,
+            summaryData.removalFee || 0,
+            summaryData.removalFee || 0,
+            removalExcluded
+        ));
+
+        // Return the full table structure
+        return `
+            <table class="items-table" border="1" cellpadding="0" cellspacing="0"> 
+                <colgroup>
+                    <col style="width: 8%;"> 
+                    <col style="width: 42%;">
+                    <col style="width: 15%;">
+                    <col style="width: 17.5%;"> 
+                    <col style="width: 17.5%;">
+                </colgroup> 
+                <thead>
+                    <tr>
+                        <th>NO</th> 
+                        <th>Description</th>
+                        <th class="align-right">QTY</th> 
+                        <th class="align-right">Price</th>
+                        <th class="align-right">Discounted Price</th> 
+                    </tr>
+                </thead> 
+                <tbody>
+                    ${rows.join('')}
+                </tbody> 
+            </table>
+        `;
+    }
+
+    // [NEW v6290 Task 1] This is the restored function for GTH
+    // It generates MULTIPLE tables (cards)
+    _generatePageOneItemsTableHtml_GTH(templateData) {
+        const { summaryData, uiState, items } = templateData;
+        const rows = [];
+        const validItemCount = items.filter(i => i.width && i.height).length;
+
+        // [MODIFIED v6290] Use new helper function to build rows
+        const createRow = (number, description, qty, price, discountedPrice, isExcluded = false) => {
+            const priceStyle = isExcluded ? 'style="text-decoration: line-through; color: #999999;"' : '';
+            const discountedPriceValue = isExcluded ? 0 : discountedPrice;
+            // [MODIFIED] Show red only if discount is applied
+            const discountedPriceStyle = (discountedPrice < price) ? 'style="font-weight: bold; color: #d32f2f;"' : '';
+
+            return `
+                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+                    style="border-collapse: collapse; margin-bottom: 15px; border: 1px solid #e0e0e0; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                    <tbody>
+                        <tr>
+                            <td
+                                style="padding: 10px 15px; border-bottom: 1px solid #e0e0e0; background-color: #1a237e; color: white; border-radius: 4px 4px 0 0;">
+                                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="color: white;">
+                                    <tr>
+                                        <td width="50%" valign="top" style="text-align: left; font-weight: bold;">#${number}</td>
+                                        <td width="50%" valign="top" style="text-align: right; font-weight: normal;">${description}</td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px 15px; border-bottom: 1px solid #e0e0e0;">
+                                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                    <tr>
+                                        <td width="50%" valign="top" style="text-align: left; font-weight: 600;">QTY</td>
+                                        <td width="50%" valign="top" style="text-align: right;">${qty}</td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px 15px; border-bottom: 1px solid #e0e0e0;">
+                                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                    <tr>
+                                        <td width="50%" valign="top" style="text-align: left; font-weight: 600;">Price</td>
+                                        <td width="50%" valign="top" style="text-align: right;">
+                                            <span ${priceStyle}>$${price.toFixed(2)}</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px 15px;">
+                                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                    <tr>
+                                        <td width="50%" valign="top" style="text-align: left; font-weight: 600;">Discounted Price</td>
+                                        <td width="50%" valign="top" style="text-align: right;">
+                                            <span ${discountedPriceStyle}>$${discountedPriceValue.toFixed(2)}</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+        };
+
+        let itemNumber = 1;
+
+        // Row 1: Roller Blinds
+        rows.push(createRow(
+            itemNumber++,
+            'Roller Blinds',
+            validItemCount,
+            summaryData.firstRbPrice || 0,
+            summaryData.disRbPrice || 0
+        ));
+
+        // Row 2: Accessories (Optional)
+        if (summaryData.acceSum > 0) {
+            rows.push(createRow(
+                itemNumber++,
+                'Installation Accessories',
+                'NA',
+                summaryData.acceSum || 0,
+                summaryData.acceSum || 0
+            ));
+        }
+
+        // Row 3: Motorised (Optional)
+        if (summaryData.eAcceSum > 0) {
+            rows.push(createRow(
+                itemNumber++,
+                'Motorised Accessories',
+                'NA',
+                summaryData.eAcceSum || 0,
+                summaryData.eAcceSum || 0
+            ));
+        }
+
+        // Row 4: Delivery
+        const deliveryExcluded = uiState.f2.deliveryFeeExcluded;
+        rows.push(createRow(
+            itemNumber++,
+            'Delivery',
+            uiState.f2.deliveryQty || 1,
+            summaryData.deliveryFee || 0,
+            summaryData.deliveryFee || 0,
+            deliveryExcluded
+        ));
+
+        // Row 5: Installation
+        // [MODIFIED v6290 Bug 1 Fix]
+        const installExcluded = uiState.f2.installFeeExcluded;
+        rows.push(createRow(
+            itemNumber++,
+            'Installation',
+            uiState.f2.installQty || 0, // Use installQty from F2 state
+            summaryData.installFee || 0,
+            summaryData.installFee || 0,
+            installExcluded
+        ));
+
+        // Row 6: Removal
+        const removalExcluded = uiState.f2.removalFeeExcluded;
+        rows.push(createRow(
+            itemNumber++,
+            'Removal',
+            uiState.f2.removalQty || 0,
+            summaryData.removalFee || 0,
+            summaryData.removalFee || 0,
+            removalExcluded
+        ));
 
         return rows.join('');
     }
@@ -13221,6 +13487,7 @@ export class UIManager {
 /* File: 04-core-code/ui/css/f2-summary-table.css */
 
 .f2-summary-grid {
+
     display: grid;
     /* Columns: A(label) B(value/input) C(value) */
     grid-template-columns: 1fr 1fr 1fr;
@@ -13261,7 +13528,8 @@ export class UIManager {
 .grid-cell-input {
     width: 100%;
     border: 1px solid #b0b8c4;
-    border-radius: 3px;
+    border-radius:
+        3px;
     text-align: right;
     padding-right: 6px;
     font-family: 'Courier New', Courier, monospace;
@@ -13298,9 +13566,10 @@ export class UIManager {
     font-size: 0.85em;
 }
 
-/* [NEW] Total Ê®ôÁ±§?ÑÁ??≤Ê?Â≠?*/
+/* [NEW] Total √¶¬®?¢√ß¬±¬??û√??¬≤√¶?√•¬≠?*/
 .text-red {
     color: #c0392b;
+
     /* Red */
 }
 
@@ -13320,12 +13589,12 @@ export class UIManager {
     /* Light yellow */
 }
 
-/* [NEW] new-offer ‰ΩøÁî®Ê∑°Á???*/
+/* [NEW] new-offer √§¬Ω¬ø√ß?ù¬®√¶¬∑¬°√???*/
 #new-offer {
     background-color: #dcfce7;
 }
 
-/* [NEW] (Phase 2) f2-b24-gst ‰ΩøÁî®Ê∑°Ë???*/
+/* [NEW] (Phase 2) f2-b24-gst √§¬Ω¬ø√ß?ù¬®√¶¬∑¬°√???*/
 #f2-b24-gst {
     background-color: #e0f7fa;
     /* Light Blue */
@@ -13335,6 +13604,7 @@ export class UIManager {
 #f2-label-gst {
     background-color: #e0f7fa;
     /* Light Blue */
+
     border-radius: 3px;
     padding: 4px 10px 4px 4px;
     cursor: pointer;
@@ -13370,13 +13640,42 @@ export class UIManager {
     color: #721c24;
 }
 
-/* [NEW] (Phase 2) Add exclusion style for GST */
+/* [NEW] (Phase 
+ 2) Add exclusion style for GST */
 #f2-label-gst.is-excluded,
 #f2-b24-gst.is-excluded {
     background-color: #f8d7da !important;
     /* Light pink */
     text-decoration: line-through;
     color: #721c24;
+}
+
+/* [REMOVED] v6290 Task 5: Wrapper for final total section removed */
+/*
+.final-total-wrapper {
+    grid-column: 1 / -1; 
+    display: grid;
+    grid-template-columns: subgrid; 
+    gap: 4px 10px; 
+    
+    border: 1px solid #c0392b; 
+    border-radius: 4px;
+    padding: 10px;
+    margin-top: 8px;
+}
+*/
+
+/* [NEW] v6290 Deposit/Balance styles */
+.bg-light-green {
+    background-color: #dcfce7;
+    /* Light green */
+    border-color: #86efac;
+}
+
+.bg-light-orange {
+    background-color: #ffedd5;
+    /* Light orange */
+    border-color: #fdbf71;
 }
 
 
@@ -14036,21 +14335,23 @@ initial-scale=1.0">
             font-family: 'Helvetica Neue', Arial, sans-serif;
             background-color: #f4f4f4;
             color: #333;
-margin: 0;
+            margin: 0;
             padding: 20px;
         }
 
         .page-container {
-            max-width: 900px; /* [MODIFIED] Set max-width to match the main quote page */
+            max-width: 900px;
+            /* [MODIFIED] Set max-width to match the main quote page */
             margin: auto;
             padding: 20px;
         }
 
         .content-wrapper {
+
             background-color: #fff;
             padding: 30px;
-            border-radius: 
-8px;
+            border-radius:
+                8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             border: 2px solid #a0d3e8;
         }
@@ -14071,7 +14372,8 @@ margin: 0;
             color: #444;
         }
 
-        .quote-number { 
+
+        .quote-number {
             font-size: 16px;
             color: #555;
         }
@@ -14086,12 +14388,13 @@ margin: 0;
         }
 
         table {
-            
+
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
             border: 2px solid var(--border-dark-grey);
-            table-layout: fixed; /* Use fixed layout for predictable column widths */
+            table-layout: fixed;
+            /* Use fixed layout for predictable column widths */
         }
 
         th,
@@ -14103,10 +14406,11 @@ margin: 0;
             white-space: nowrap;
         }
 
-        
+
         thead th {
             font-weight: 600;
         }
+
 
         tfoot {
             font-weight: bold;
@@ -14117,10 +14421,11 @@ margin: 0;
         }
 
         .bg-blockout {
-            
+
             background-color: #f0f0f0;
             /* Light Grey */
         }
+
 
         .bg-screen {
             background-color: #e0f7fa;
@@ -14129,7 +14434,7 @@ margin: 0;
 
         .bg-light-filter {
             background-color: #ffe4e1;
-            /* Pink */ 
+            /* Pink */
         }
 
         .table-title {
@@ -14140,13 +14445,14 @@ margin: 0;
             border-bottom: 2px solid var(--border-light-grey);
         }
 
+
         .total-row {
             background-color: var(--header-bg-color);
             font-weight: bold;
         }
 
         .text-center {
-            
+
             text-align: center;
         }
 
@@ -14155,6 +14461,7 @@ margin: 0;
         }
 
         .legend {
+
             margin-top: 40px;
             padding: 15px;
             border: 1px solid #ccc;
@@ -14163,7 +14470,7 @@ margin: 0;
         }
 
         .legend h3 {
-            
+
             margin-top: 0;
         }
 
@@ -14174,6 +14481,7 @@ margin: 0;
         }
 
         .color-swatch {
+
             display: inline-block;
             width: 14px;
             height: 14px;
@@ -14182,7 +14490,7 @@ margin: 0;
             vertical-align: middle;
         }
 
-        
+
         .table-scroll-wrapper {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
@@ -14195,24 +14503,30 @@ margin: 0;
             align-items: flex-start;
         }
 
-/* <CHANGE> ?ÜÂà•Ë®≠Â??©ÂÄãÂ??ÉÁ???flex Â±¨ÊÄßÔ?‰ΩøË°®?º‰?Âª∂Â? */
-.appendix-flex-container > .table-scroll-wrapper {
-    flex: 0 0 auto;        /* ‰∏ç‰º∏Á∏ÆÔ??πÊ??ßÂÆπÊ±∫Â?ÂØ¨Â∫¶ */
-    max-width: 400px;      /* ?ÄÂ§ßÂØ¨Â∫?400px */
-    
-    min-width: 272px;      /* ?ÄÂ∞èÂØ¨Â∫?272px */
-}
+        /* <CHANGE> ??†√•ÀÜ¬•√®¬®¬≠√??¬©√•?¨‚Äπ√???√ß???flex √•¬±¬¨√¶?¨¬ß√?√§¬Ω¬ø√®¬°¬®?¬º√§?√•¬ª¬∂√•? */
+        .appendix-flex-container>.table-scroll-wrapper {
+            flex: 0 0 auto;
+            /* √§¬∏ √§¬º¬∏√ß¬∏¬Æ√Ø??¬π√¶??¬ß√•¬Æ¬π√¶¬±¬∫√•?√•¬Ø¬¨√•¬∫¬¶ */
+            max-width: 400px;
+            /* ??¨√•¬§¬ß√•¬Ø¬¨√•¬?400px */
 
-.appendix-flex-container > .legend {
-    flex: 1;               /* ‰ΩîÁî®?©È?Á©∫È? */
-    min-width: 250px;      /* Á¢∫‰??ñ‰??âË∂≥Â§†ÂØ¨Â∫?*/
-}
-        
+            min-width: 272px;
+            /* ??¨√•¬?√•¬Ø¬¨√•¬∫?272px */
+        }
+
+        .appendix-flex-container>.legend {
+            flex: 1;
+            /* √§¬Ω?ù√ß‚Äù¬?¬©√©?√ß¬©¬∫√©? */
+            min-width: 250px;
+            /* √ß¬¢¬∫√§???ì√???∞√®¬∂¬≥√•¬§¬†√•¬Ø¬¨√•¬?*/
+        }
+
         @media (max-width: 850px) {
             .appendix-flex-container {
                 flex-direction: column;
             }
-            
+
+
         }
 
         @media (max-width: 768px) {
@@ -14224,7 +14538,8 @@ margin: 0;
                 padding: 15px;
             }
 
-            
+
+
             .main-header {
                 flex-direction: column;
                 align-items: flex-start;
@@ -14234,15 +14549,18 @@ margin: 0;
             .table-scroll-wrapper {
                 overflow-x: hidden;
             }
+
             .detailed-list-table {
-                
+
+
                 border: none;
                 /* [MODIFIED] Force table to behave like a block element to ensure full width */
                 display: block;
                 table-layout: auto;
             }
+
             .detailed-list-table thead {
-                border: none; 
+                border: none;
                 clip: rect(0 0 0 0);
                 height: 1px;
                 margin: -1px;
@@ -14251,16 +14569,19 @@ margin: 0;
                 position: absolute;
                 width: 1px;
             }
+
             .detailed-list-table tr {
                 display: block;
                 margin-bottom: 15px;
                 border: 1px solid var(--border-light-grey);
                 border-radius: 5px;
                 padding: 0;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
             }
+
             .detailed-list-table td {
-                
+
+
                 display: flex;
                 justify-content: space-between;
                 padding: 10px 15px;
@@ -14268,32 +14589,37 @@ margin: 0;
                 border-bottom: 1px solid var(--border-light-grey);
                 text-align: right;
             }
+
             /* [REMOVED] This rule was hiding empty cells (like HD, Dual) and is no longer needed. */
             /* .detailed-list-table td.is-empty-cell {
                 
                 display: none;
             } */
+
             .detailed-list-table tr td:last-child {
                 border-bottom: none;
             }
-            
+
             .detailed-list-table td:before {
-                
+
                 content: attr(data-label);
                 font-weight: 600;
                 text-align: left;
                 padding-right: 15px;
             }
+
             .detailed-list-table td:first-of-type {
                 background-color: var(--header-bg-color);
                 color: #333;
                 font-weight: bold;
                 border-radius: 4px 4px 0 0;
             }
+
             .detailed-list-table td:first-of-type::before {
-                
+
                 color: #333;
             }
+
 
             .motorised-accessories-table {
                 table-layout: auto;
@@ -14303,8 +14629,10 @@ margin: 0;
 
         /* [NEW v6285 Print Optimization] */
         @media print {
+
             /* Force background colors (Problem 1) */
             * {
+
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
             }
@@ -14315,11 +14643,53 @@ margin: 0;
             }
 
             /* Prevent content breaking (v6281 Plan) */
+
             .detailed-list-table tr,
             .motorised-accessories-table,
             .legend,
             .appendix-flex-container {
                 page-break-inside: avoid;
+            }
+
+            /* --- [NEW v6290 Task 4] Print Override for Mobile Card View --- */
+            /* Âº∑Âà∂?¢Âæ©Ë°®Ê†º‰ΩàÂ? */
+            .detailed-list-table {
+                display: table !important;
+                table-layout: fixed !important;
+            }
+
+            /* Âº∑Âà∂È°ØÁ§∫Ë°®Ê†ºÊ®ôÈ†≠ */
+            .detailed-list-table thead {
+                display: table-header-group !important;
+                position: static !important;
+                height: auto !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: auto !important;
+                border: none !important;
+                clip: rect(auto, auto, auto, auto) !important;
+            }
+
+            /* Âº∑Âà∂?¢Âæ©Ë°®Ê†ºË°?*/
+            .detailed-list-table tr {
+                display: table-row !important;
+                margin-bottom: 0 !important;
+                border: 1px solid var(--border-light-grey) !important;
+                box-shadow: none !important;
+            }
+
+            /* Âº∑Âà∂?¢Âæ©Ë°®Ê†º?≤Â???*/
+            .detailed-list-table td {
+                display: table-cell !important;
+                justify-content: flex-start !important;
+                padding: 10px 12px !important;
+                border-bottom: 1px solid var(--border-light-grey) !important;
+            }
+
+            /* Âº∑Âà∂?±Ë??°Á?Ê®°Â??ÑÊ?Á±?*/
+            .detailed-list-table td:before {
+                content: none !important;
+                display: none !important;
             }
         }
     </style>
@@ -14329,84 +14699,108 @@ margin: 0;
 
     <div class="page-container">
         <div class="content-wrapper">
-            
+
+
             <div class="main-header">
                 <h1>Quotation Appendix</h1>
                 <div class="quote-number">
                     <strong>Quote No:</strong> {{quoteId}}
                 </div>
-            </div> 
+            </div>
+
 
             <div class="table-scroll-wrapper">
                 {{{rollerBlindsTable}}}
             </div>
 
             <div class="appendix-flex-container">
-                
+
                 <div class="table-scroll-wrapper">
+
                     <table class="motorised-accessories-table">
                         <colgroup>
                             <col style="width: auto;">
-                            
+
+
                             <col style="width: auto;">
                             <col style="width: auto;">
-                        </colgroup> 
+                        </colgroup>
+
                         <thead>
                             <tr class="table-title">
-                                <th colspan="3">Motorised Accessories Summary</th> 
+                                <th colspan="3">Motorised Accessories Summary</th>
+
                             </tr>
                             <tr>
-                                <th>Item</th> 
+                                <th>Item</th>
                                 <th class="text-center">QTY</th>
-                                <th class="text-right">Total Price</th> 
+
+                                <th class="text-right">Total Price</th>
                             </tr>
                         </thead>
-                        <tbody> 
+
+                        <tbody>
                             <tr>
                                 <td data-label="Item">Motor</td>
-                                <td data-label="QTY" class="text-center">{{motorQty}}</td> 
+
+                                <td data-label="QTY" class="text-center">{{motorQty}}</td>
                                 <td data-label="Total Price" class="text-right">{{motorPrice}}</td>
-                            </tr> 
+                            </tr>
+
                             <tr>
                                 <td data-label="Item">Remote (1CH)</td>
-                                <td data-label="QTY" class="text-center">{{remote1chQty}}</td> 
+                                <td data-label="QTY" class="text-center">{{remote1chQty}}</td>
+
                                 <td data-label="Total Price" class="text-right">{{remote1chPrice}}</td>
-                            </tr> 
+                            </tr>
                             <tr>
+
                                 <td data-label="Item">Remote (16CH)</td>
-                                <td data-label="QTY" class="text-center">{{remote16chQty}}</td> 
+                                <td data-label="QTY" class="text-center">{{remote16chQty}}</td>
                                 <td data-label="Total Price" class="text-right">{{remote16chPrice}}</td>
-                            </tr> 
+
+                            </tr>
                             <tr>
                                 <td data-label="Item">Charger</td>
-                                <td data-label="QTY" class="text-center">{{chargerQty}}</td> 
+
+                                <td data-label="QTY" class="text-center">{{chargerQty}}</td>
                                 <td data-label="Total Price" class="text-right">{{chargerPrice}}</td>
-                            </tr> 
+                            </tr>
+
                             <tr>
                                 <td data-label="Item">3M Cord</td>
-                                <td data-label="QTY" class="text-center">{{cord3mQty}}</td> 
+                                <td data-label="QTY" class="text-center">{{cord3mQty}}</td>
+
                                 <td data-label="Total Price" class="text-right">{{cord3mPrice}}</td>
-                            </tr> 
+                            </tr>
                         </tbody>
                         <tfoot>
-                            <tr class="total-row"> 
+
+                            <tr class="total-row">
                                 <td colspan="2" class="text-right">Total</td>
                                 <td class="text-right">{{eAcceSum}}</td>
-                            </tr> 
+
+                            </tr>
                         </tfoot>
                     </table>
-                </div> 
+                </div>
+
 
                 <div class="legend">
                     <h3>Abbreviations Key</h3>
-                    <p><span class="color-swatch" style="background-color: #f0f0f0;"></span><strong>F-Name & F-Color:</strong> Blockout (BO)</p>
-                    <p><span class="color-swatch" style="background-color: #e0f7fa;"></span><strong>F-Name & F-Color:</strong> Screen (SN)</p> 
-                    <p><span class="color-swatch" style="background-color: #ffe4e1;"></span><strong>F-Name & F-Color:</strong> Light Filter (LF)</p>
+                    <p><span class="color-swatch" style="background-color: #f0f0f0;"></span><strong>F-Name &
+                            F-Color:</strong> Blockout (BO)</p>
+                    <p><span class="color-swatch" style="background-color: #e0f7fa;"></span><strong>F-Name &
+                            F-Color:</strong> Screen (SN)</p>
+
+                    <p><span class="color-swatch" style="background-color: #ffe4e1;"></span><strong>F-Name &
+                            F-Color:</strong> Light Filter (LF)</p>
                     <p><strong>HD:</strong> Heavy-Duty Winder</p>
-                    <p><strong>Dual:</strong> Double Bracket (for Dual Roller Blinds)</p> 
+                    <p><strong>Dual:</strong> Double Bracket (for Dual Roller Blinds)</p>
                 </div>
             </div>
         </div>
+
     </div>
 
 </body>
@@ -14421,7 +14815,7 @@ margin: 0;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RB2025102720</title>
+    <title>{{quoteId}}</title>
     <style>
         body {
             font-family: 'Helvetica Neue', Arial, 'Heiti TC', 'Microsoft JhengHei', sans-serif;
@@ -14439,30 +14833,39 @@ margin: 0;
             <header class="header" style="padding-bottom: 20px; border-bottom: 3px solid #1a237e; margin-bottom: 30px;">
                 <table width="100%" border="0" cellspacing="0" cellpadding="0">
                     <tr>
+
                         <td valign="top" style="text-align: right; padding-bottom: 30px;">
                             <h1 style="margin: 0; color: #1a237e; font-size: 26.6px; text-align: right;">Ez<span
                                     style="font-size: 20px;"> Blinds &amp; Shutters</span></h1>
                             <p style="margin: 5px 0 0; font-size: 13.3px; color: #555555; text-align: right;">ABN: 52 62
                                 74 20 777</p>
+
                             <p style="margin: 5px 0 0; font-size: 13.3px; color: #555555; text-align: right;">U11 / 271
                                 Wells Rd, Chelsea Heights<span style="margin-left: 8px;">&#127968;</span></p>
                             <p style="margin: 5px 0 0; font-size: 13.3px; color: #555555; text-align: right;">
+
                                 <span>0466 965 168<span style="margin-left: 8px;">&#128222;</span></span>
 
                             </p>
-                            <p style="margin: 5px 0 0; font-size: 13.3px; color: #555555; text-align: right;">
+                            <p style="margin: 5px 0 0; font-size: 
+ 13.3px; color: #555555; text-align: right;">
                                 ezblinds@ezbns.com.au<span style="margin-left: 8px;">&#128231;</span></p>
                             <p style="margin: 5px 0 0; font-size: 13.3px; color: #555555; text-align: right;">
+
                                 www.ezbns.com.au<span style="margin-left: 8px;">&#127760;</span></p>
                         </td>
                     </tr>
                     <tr>
+
                         <td valign="top" style="text-align: left;">
                             <h2 style="margin: 0 0 20px 0; font-size: 22.8px; color: #B22222;">QUOTATION</h2>
-                            <p style="margin: 4px 0 0; font-size: 13.3px;"><strong>Quote No:</strong> RB2025102720</p>
-                            <p style="margin: 4px 0 0; font-size: 13.3px;"><strong>Issue Date:</strong> 2025-10-27</p>
-                            <p style="margin: 4px 0 0; font-size: 13.3px;"><strong>Due Date:</strong> 2025-11-10</p>
+                            <p style="margin: 4px 0 0; font-size: 13.3px;"><strong>Quote No:</strong> {{quoteId}}</p>
+
+                            <p style="margin: 4px 0 0; font-size: 13.3px;"><strong>Issue Date:</strong> {{issueDate}}
+                            </p>
+                            <p style="margin: 4px 0 0; font-size: 13.3px;"><strong>Due Date:</strong> {{dueDate}}</p>
                         </td>
+
                     </tr>
                 </table>
             </header>
@@ -14470,338 +14873,17 @@ margin: 0;
             <main>
                 <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
                     style="margin-bottom: 40px;">
+
                     <tr>
                         <td style="background-color: #FAFAFA; padding: 20px; border-radius: 5px;" align="left">
-                            <p style="margin: 4px 0; font-size: 14.5px; font-weight: bold;">David</p>
-                            <p style="margin: 4px 0; font-size: 13.3px; line-height: 1.6;">3 18 Great road , Great city,
-                                Vic 1000</p>
-                            <p style="margin: 4px 0; font-size: 13.3px; line-height: 1.6;">0412 345 678</p>
-                            <p style="margin: 4px 0; font-size: 13.3px; line-height: 1.6;">David@david.com.au</p>
+                            {{{customerInfoHtml}}}
                         </td>
                     </tr>
                 </table>
 
+
                 <section class="items-section">
-                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
-                        style="border-collapse: collapse; margin-bottom: 15px; border: 1px solid #e0e0e0; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                        <tbody>
-                            <tr>
-                                <td
-                                    style="padding: 10px 15px; border-bottom: 1px solid #e0e0e0; background-color: #1a237e; color: white; border-radius: 4px 4px 0 0;">
-                                    <table border="0" cellpadding="0" cellspacing="0" width="100%"
-                                        style="color: white;">
-                                        <tr>
-                                            <td width="50%" valign="top" style="text-align: left; font-weight: bold;">#1
-                                            </td>
-                                            <td width="50%" valign="top"
-                                                style="text-align: right; font-weight: normal;">Roller Blinds</td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 10px 15px; border-bottom: 1px solid #e0e0e0;">
-                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                        <tr>
-                                            <td width="50%" valign="top" style="text-align: left; font-weight: 600;">QTY
-                                            </td>
-                                            <td width="50%" valign="top" style="text-align: right;">7</td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 10px 15px; border-bottom: 1px solid #e0e0e0;">
-                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                        <tr>
-                                            <td width="50%" valign="top" style="text-align: left; font-weight: 600;">
-                                                Price</td>
-                                            <td width="50%" valign="top" style="text-align: right;"><span
-                                                    style="text-decoration: line-through; color: #999999; font-size: 13.3px;">$0.00</span>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 10px 15px;">
-                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                        <tr>
-                                            <td width="50%" valign="top" style="text-align: left; font-weight: 600;">
-                                                Discounted Price</td>
-                                            <td width="50%" valign="top" style="text-align: right;"><span
-                                                    style="font-weight: bold; color: #d32f2f;">$0.00</span></td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
-                        style="border-collapse: collapse; margin-bottom: 15px; border: 1px solid #e0e0e0; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                        <tbody>
-                            <tr>
-                                <td
-                                    style="padding: 10px 15px; border-bottom: 1px solid #e0e0e0; background-color: #1a237e; color: white; border-radius: 4px 4px 0 0;">
-                                    <table border="0" cellpadding="0" cellspacing="0" width="100%"
-                                        style="color: white;">
-                                        <tr>
-                                            <td width="50%" valign="top" style="text-align: left; font-weight: bold;">#2
-                                            </td>
-                                            <td width="50%" valign="top"
-                                                style="text-align: right; font-weight: normal;">Accessories</td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 10px 15px; border-bottom: 1px solid #e0e0e0;">
-                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                        <tr>
-                                            <td width="50%" valign="top" style="text-align: left; font-weight: 600;">QTY
-                                            </td>
-                                            <td width="50%" valign="top" style="text-align: right;">NA</td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 10px 15px; border-bottom: 1px solid #e0e0e0;">
-                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                        <tr>
-                                            <td width="50%" valign="top" style="text-align: left; font-weight: 600;">
-                                                Price</td>
-                                            <td width="50%" valign="top" style="text-align: right;">$80.00</td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 10px 15px;">
-                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                        <tr>
-                                            <td width="50%" valign="top" style="text-align: left; font-weight: 600;">
-                                                Discounted Price</td>
-                                            <td width="50%" valign="top" style="text-align: right;">$80.00</td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
-                        style="border-collapse: collapse; margin-bottom: 15px; border: 1px solid #e0e0e0; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                        <tbody>
-                            <tr>
-                                <td
-                                    style="padding: 10px 15px; border-bottom: 1px solid #e0e0e0; background-color: #1a237e; color: white; border-radius: 4px 4px 0 0;">
-                                    <table border="0" cellpadding="0" cellspacing="0" width="100%"
-                                        style="color: white;">
-                                        <tr>
-                                            <td width="50%" valign="top" style="text-align: left; font-weight: bold;">#3
-                                            </td>
-                                            <td width="50%" valign="top"
-                                                style="text-align: right; font-weight: normal;">Motorised Package</td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 10px 15px; border-bottom: 1px solid #e0e0e0;">
-                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                        <tr>
-                                            <td width="50%" valign="top" style="text-align: left; font-weight: 600;">QTY
-                                            </td>
-                                            <td width="50%" valign="top" style="text-align: right;">NA</td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 10px 15px; border-bottom: 1px solid #e0e0e0;">
-                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                        <tr>
-                                            <td width="50%" valign="top" style="text-align: left; font-weight: 600;">
-                                                Price</td>
-                                            <td width="50%" valign="top" style="text-align: right;">$650.00</td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 10px 15px;">
-                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                        <tr>
-                                            <td width="50%" valign="top" style="text-align: left; font-weight: 600;">
-                                                Discounted Price</td>
-                                            <td width="50%" valign="top" style="text-align: right;">$650.00</td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
-                        style="border-collapse: collapse; margin-bottom: 15px; border: 1px solid #e0e0e0; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                        <tbody>
-                            <tr>
-                                <td
-                                    style="padding: 10px 15px; border-bottom: 1px solid #e0e0e0; background-color: #1a237e; color: white; border-radius: 4px 4px 0 0;">
-                                    <table border="0" cellpadding="0" cellspacing="0" width="100%"
-                                        style="color: white;">
-                                        <tr>
-                                            <td width="50%" valign="top" style="text-align: left; font-weight: bold;">#4
-                                            </td>
-                                            <td width="50%" valign="top"
-                                                style="text-align: right; font-weight: normal;">Delivery</td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 10px 15px; border-bottom: 1px solid #e0e0e0;">
-                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                        <tr>
-                                            <td width="50%" valign="top" style="text-align: left; font-weight: 600;">QTY
-                                            </td>
-                                            <td width="50%" valign="top" style="text-align: right;">1</td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 10px 15px; border-bottom: 1px solid #e0e0e0;">
-                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                        <tr>
-                                            <td width="50%" valign="top" style="text-align: left; font-weight: 600;">
-                                                Price</td>
-                                            <td width="50%" valign="top" style="text-align: right;">$0.00</td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 10px 15px;">
-                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                        <tr>
-                                            <td width="50%" valign="top" style="text-align: left; font-weight: 600;">
-                                                Discounted Price</td>
-                                            <td width="50%" valign="top" style="text-align: right;">$0.00</td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
-                        style="border-collapse: collapse; margin-bottom: 15px; border: 1px solid #e0e0e0; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                        <tbody>
-                            <tr>
-                                <td
-                                    style="padding: 10px 15px; border-bottom: 1px solid #e0e0e0; background-color: #1a237e; color: white; border-radius: 4px 4px 0 0;">
-                                    <table border="0" cellpadding="0" cellspacing="0" width="100%"
-                                        style="color: white;">
-                                        <tr>
-                                            <td width="50%" valign="top" style="text-align: left; font-weight: bold;">#5
-                                            </td>
-                                            <td width="50%" valign="top"
-                                                style="text-align: right; font-weight: normal;">Installation</td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 10px 15px; border-bottom: 1px solid #e0e0e0;">
-                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                        <tr>
-                                            <td width="50%" valign="top" style="text-align: left; font-weight: 600;">QTY
-                                            </td>
-                                            <td width="50%" valign="top" style="text-align: right;">7</td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 10px 15px; border-bottom: 1px solid #e0e0e0;">
-                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                        <tr>
-                                            <td width="50%" valign="top" style="text-align: left; font-weight: 600;">
-                                                Price</td>
-                                            <td width="50%" valign="top" style="text-align: right;">$0.00</td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 10px 15px;">
-                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                        <tr>
-                                            <td width="50%" valign="top" style="text-align: left; font-weight: 600;">
-                                                Discounted Price</td>
-                                            <td width="50%" valign="top" style="text-align: right;">$0.00</td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
-                        style="border-collapse: collapse; margin-bottom: 30px; border: 1px solid #e0e0e0; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                        <tbody>
-                            <tr>
-                                <td
-                                    style="padding: 10px 15px; border-bottom: 1px solid #e0e0e0; background-color: #1a237e; color: white; border-radius: 4px 4px 0 0;">
-                                    <table border="0" cellpadding="0" cellspacing="0" width="100%"
-                                        style="color: white;">
-                                        <tr>
-                                            <td width="50%" valign="top" style="text-align: left; font-weight: bold;">#6
-                                            </td>
-                                            <td width="50%" valign="top"
-                                                style="text-align: right; font-weight: normal;">Removal</td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 10px 15px; border-bottom: 1px solid #e0e0e0;">
-                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                        <tr>
-                                            <td width="50%" valign="top" style="text-align: left; font-weight: 600;">QTY
-                                            </td>
-                                            <td width="50%" valign="top" style="text-align: right;">0</td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 10px 15px; border-bottom: 1px solid #e0e0e0;">
-                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                        <tr>
-                                            <td width="50%" valign="top" style="text-align: left; font-weight: 600;">
-                                                Price</td>
-                                            <td width="50%" valign="top" style="text-align: right;">$0.00</td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 10px 15px;">
-                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                        <tr>
-                                            <td width="50%" valign="top" style="text-align: left; font-weight: 600;">
-                                                Discounted Price</td>
-                                            <td width="50%" valign="top" style="text-align: right;">$0.00</td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    {{{itemsTableBody}}}
                 </section>
 
                 <section class="summary-section"
@@ -14811,53 +14893,59 @@ margin: 0;
                             style="width: 100%; border-collapse: collapse; margin-top: 20px; border: 2px solid #555555;">
                             <tbody>
                                 <tr>
+
                                     <td class="summary-label"
                                         style="padding: 8px 0; border: 1px solid #dddddd; font-size: 13.3px; text-align: right; padding-right: 20px; color: #555555;">
+
                                         Subtotal</td>
-                                    <td class="summary-value"
-                                        style="padding: 8px 0; border: 1px solid #dddddd; font-size: 13.3px; text-align: right; font-weight: 500; padding-right: 10px;">
-                                        $730.00</td>
+                                    <td class="summary-value" style="padding: 8px 0; border: 1px solid 
+ #dddddd; font-size: 13.3px; text-align: right; font-weight: 500; padding-right: 10px;">
+                                        {{subtotal}}</td>
                                 </tr>
+
                                 <tr class="grand-total">
                                     <td class="summary-label"
-                                        style="padding: 10px 0 8px; border: 1px solid #dddddd; font-size: 17.1px; font-weight: bold; color: #1a237e; text-align: right; padding-right: 20px;">
+                                        style="padding: 10px 0 8px;
+ border: 1px solid #dddddd; font-size: 17.1px; font-weight: bold; color: #1a237e; text-align: right; padding-right: 20px;">
                                         Our Offer</td>
                                     <td class="summary-value"
                                         style="padding: 10px 0 8px; border: 1px solid #dddddd; font-size: 17.1px; font-weight: bold; color: #1a237e; text-align: right; padding-right: 10px;">
-                                        $803.00</td>
+                                        {{grandTotal}}</td>
+
                                 </tr>
-                                <tr>
-                                    <td class="summary-label"
-                                        style="padding: 8px 0; border: 1px solid #dddddd; font-size: 13.3px; text-align: right; padding-right: 20px; color: #555555;">
-                                        GST</td>
-                                    <td class="summary-value"
-                                        style="padding: 8px 0; border: 1px solid #dddddd; font-size: 13.3px; text-align: right; font-weight: 500; padding-right: 10px;">
-                                        $73.00</td>
-                                </tr>
+                                {{{gstRowHtml}}}
                                 <tr class="grand-total">
+
                                     <td class="summary-label"
                                         style="padding: 10px 0 8px; border: 1px solid #dddddd; font-size: 17.1px; font-weight: bold; color: #FF69B4; text-align: right; padding-right: 20px;">
+
                                         Total</td>
                                     <td class="summary-value"
                                         style="padding: 10px 0 8px; border: 1px solid #dddddd; font-size: 17.1px; font-weight: bold; color: #FF69B4; text-align: right; padding-right: 10px;">
-                                        $803.00</td>
+                                        {{grandTotal}}</td>
+
                                 </tr>
                                 <tr>
                                     <td class="summary-label"
                                         style="padding: 8px 0; border: 1px solid #dddddd; font-size: 13.3px; text-align: right; padding-right: 20px; color: #555555;">
                                         Deposit</td>
+
                                     <td class="summary-value"
                                         style="padding: 8px 0; border: 1px solid #dddddd; font-size: 13.3px; text-align: right; font-weight: 500; padding-right: 10px;">
-                                        $401.50</td>
+
+                                        {{deposit}}</td>
                                 </tr>
                                 <tr>
+
                                     <td class="summary-label"
                                         style="padding: 8px 0; border: 1px solid #dddddd; font-size: 13.3px; text-align: right; padding-right: 20px; color: #555555;">
+
                                         Balance</td>
-                                    <td class="summary-value"
-                                        style="padding: 8px 0; border: 1px solid #dddddd; font-size: 13.3px; text-align: right; font-weight: 500; padding-right: 10px;">
-                                        $401.50</td>
+                                    <td class="summary-value" style="padding: 8px 0; border: 1px solid #dddddd; font-size: 13.3px; text-align: 
+ right; font-weight: 500; padding-right: 10px;">
+                                        {{balance}}</td>
                                 </tr>
+
                             </tbody>
                         </table>
                     </div>
@@ -14866,27 +14954,31 @@ margin: 0;
                     style="width: 100%; margin-top: 20px; margin-bottom: 20px; box-sizing: border-box; border: 1px solid #e0e0e0; border-radius: 4px; padding: 20px;">
                     <table class="payment-table"
                         style="width: 100%; border-collapse: collapse; font-size: 1em; margin-top: 20px; border: 2px solid #555555;">
+
                         <tbody>
                             <tr>
                                 <td colspan="2"
                                     style="text-align: center; font-weight: bold; font-size: 15.2px; color: #1a237e; padding: 10px 0; border-bottom: 2px solid #1a237e;">
                                     Payment Method</td>
                             </tr>
+
                             <tr>
-                                <td
-                                    style="padding: 6px 0; border-bottom: 1px solid lightblue; font-size: 13.3px; font-weight: bold; width: 80px; text-align: right; padding-right: 2px;">
+                                <td style="padding: 6px 0; border-bottom: 1px solid lightblue; font-size: 13.3px; font-weight: bold; width: 80px; text-align: 
+ right; padding-right: 2px;">
                                     Bank</td>
                                 <td
                                     style="padding: 6px 0 6px 4px; border-bottom: 1px solid lightblue; font-size: 13.3px; text-align: left; border-left: 1px solid #e0e0e0;">
                                     CBA</td>
                             </tr>
+
                             <tr>
-                                <td
-                                    style="padding: 6px 0; border-bottom: 1px solid lightblue; font-size: 13.3px; font-weight: bold; width: 80px; text-align: right; padding-right: 2px;">
+                                <td style="padding: 6px 0; border-bottom: 1px solid lightblue; font-size: 13.3px;
+ font-weight: bold; width: 80px; text-align: right; padding-right: 2px;">
                                     BSB</td>
                                 <td
                                     style="padding: 6px 0 6px 4px; border-bottom: 1px solid lightblue; font-size: 13.3px; text-align: left; border-left: 1px solid #e0e0e0;">
                                     0 6 2 &nbsp;&nbsp; 6 9 2</td>
+
                             </tr>
                             <tr>
                                 <td
@@ -14895,69 +14987,89 @@ margin: 0;
                                 <td
                                     style="padding: 6px 0 6px 4px; border-bottom: 1px solid lightblue; font-size: 13.3px; text-align: left; border-left: 1px solid #e0e0e0;">
                                     4 5 7 0 &nbsp;&nbsp; 8 8 7 7</td>
+
                             </tr>
                             <tr>
                                 <td
                                     style="padding: 6px 0; border-bottom: 1px solid lightblue; font-size: 13.3px; font-weight: bold; width: 80px; text-align: right; padding-right: 2px;">
                                     Name</td>
+
                                 <td
                                     style="padding: 6px 0 6px 4px; border-bottom: 1px solid lightblue; font-size: 13.3px; text-align: left; border-left: 1px solid #e0e0e0;">
                                     Alphalead &nbsp;Pty &nbsp;Ltd</td>
+
                             </tr>
                             <tr style="background-color: #f5f5f5;">
                                 <td
                                     style="padding: 6px 0; font-size: 13.3px; font-weight: bold; width: 80px; text-align: right; padding-right: 2px;">
                                     PayID</td>
+
                                 <td
                                     style="padding: 6px 0 6px 4px; font-size: 13.3px; text-align: left; border-left: 1px solid #e0e0e0;">
-                                    6 2 7 &nbsp;&nbsp; 4 2 0 &nbsp;&nbsp; 7 7 7</td>
+                                    6 2 7 &nbsp;&nbsp; 4 2
+                                    0 &nbsp;&nbsp; 7 7 7</td>
                             </tr>
                         </tbody>
                     </table>
                     <p class="payment-reference-text"
                         style="margin-top: 10px; font-size: 11.4px; white-space: normal; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%;">
-                        <em>Please leave your Ph. number as Ref. in the transaction.</em></p>
+                        <em>Please leave your Ph. number as Ref. in the transaction.</em>
+                    </p>
                 </section>
+
 
                 <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
                     style="margin-top: 30px;">
                     <tr>
                         <td style="background-color: #f9f9f9; border: 1px solid #000000; border-radius: 4px;">
+
                             <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                                 <tr>
                                     <td align="center" style="padding: 20px 20px 10px 20px;">
+
                                         <h4 style="margin: 0; color: #1a237e;">General Notes</h4>
                                     </td>
+
                                 </tr>
                                 <tr>
                                     <td align="left" style="padding: 0px 20px 20px 20px;">
+
                                         <p
                                             style="margin: 0; font-size: 12px; line-height: 1.6; white-space: normal; word-wrap: break-word;">
-                                            lead time is about 2 weeks.</p>
+
+                                            {{{generalNotes}}}</p>
                                     </td>
+
                                 </tr>
                             </table>
                         </td>
                     </tr>
+
                 </table>
                 <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
                     style="margin-top: 30px;">
                     <tr>
                         <td style="background-color: #f9f9f9; border: 1px solid #000000; border-radius: 4px;">
+
                             <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                                 <tr>
-                                    <td align="center" style="padding: 20px 20px 10px 20px;">
+                                    <td align="center" style="padding: 20px 20px 
+ 10px 20px;">
                                         <h4 style="margin: 0; color: #1a237e;">Terms &amp; Conditions</h4>
                                     </td>
+
                                 </tr>
                                 <tr>
                                     <td align="left" style="padding: 0px 20px 20px 20px;">
-                                        <p style="font-size: 12px; margin: 0;">Standard terms and conditions apply.</p>
+
+                                        <p style="font-size: 12px; margin: 0;">{{{termsAndConditions}}}</p>
                                     </td>
+
                                 </tr>
                             </table>
                         </td>
                     </tr>
+
                 </table>
             </main>
 
@@ -14965,6 +15077,7 @@ margin: 0;
                 style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e0e0e0; font-size: 11.4px; color: #888888; text-align: center;">
                 <p style="margin: 4px 0;"><strong>Ez Blinds &amp; Shutters</strong></p>
             </footer>
+
         </div>
     </div>
 
@@ -15015,10 +15128,11 @@ margin: 0;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>{{documentTitle}}</title>
     <style>
         /* --- ?öÁî®Ê®?? --- */
-        :root { 
+        :root {
             --primary-color: #1a237e;
             /* Ê∑±Ë? */
             --border-color: #e0e0e0;
@@ -15027,15 +15141,17 @@ margin: 0;
             --success-color: #2e7d32;
             /* Á∂†Ëâ≤ÔºåÁî®?ºÊ???*/
             --icon-color: #888888;
+
         }
 
-        body { 
+        body {
             font-family: 'Helvetica Neue', Arial, 'Heiti TC', 'Microsoft JhengHei', sans-serif;
             background-color: #f0f2f5;
             margin: 0;
             padding: 20px;
             color: var(--text-color);
         }
+
 
         .quotation-container {
             max-width: 900px;
@@ -15046,7 +15162,8 @@ margin: 0;
         }
 
         .quotation-inner-wrapper {
-            border: 2px solid #a0d3e8; 
+
+            border: 2px solid #a0d3e8;
             padding: 40px;
             border-radius: 8px;
         }
@@ -15055,6 +15172,7 @@ margin: 0;
         .header {
             display: flex;
             justify-content: space-between;
+
             align-items: flex-start;
             padding-bottom: 20px;
             border-bottom: 3px solid var(--primary-color);
@@ -15062,11 +15180,12 @@ margin: 0;
         }
 
         /* ?¨Âè∏Ë≥áË? */
-        .company-details { 
+        .company-details {
             text-align: right;
         }
 
         .company-details h1 {
+
             margin: 0;
             color: var(--primary-color);
             font-size: 28px;
@@ -15077,7 +15196,7 @@ margin: 0;
             font-size: 14px;
             color: #555;
             display: flex;
-            align-items: center; 
+            align-items: center;
             justify-content: flex-end;
         }
 
@@ -15087,13 +15206,14 @@ margin: 0;
         }
 
         .quotation-meta h2 {
+
             margin: 0 0 20px 0;
             font-size: 24px;
             color: #B22222;
             /* Brick Red Á£öÁ???*/
         }
 
-        .quotation-meta p { 
+        .quotation-meta p {
             margin: 4px 0 0;
             font-size: 14px;
         }
@@ -15108,8 +15228,9 @@ margin: 0;
             margin-left: 0;
             margin-right: 8px;
         }
-        
-        .company-details .icon { 
+
+
+        .company-details .icon {
             order: 1;
             margin-right: 0;
             margin-left: 8px;
@@ -15121,8 +15242,9 @@ margin: 0;
 
         /* --- ÂÆ¢Êà∂Ë≥áË? --- */
         .customer-info {
-            margin-bottom: 40px; 
+            margin-bottom: 40px;
         }
+
 
         .customer-info p {
             margin: 4px 0;
@@ -15134,9 +15256,11 @@ margin: 0;
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 30px;
-            border: 1px solid #333; /* [MODIFIED] Add base border for compatibility */
-            
+            border: 1px solid #333;
+            /* [MODIFIED] Add base border for compatibility */
+
         }
+
 
         .items-table thead {
             background-color: var(--primary-color);
@@ -15148,23 +15272,27 @@ margin: 0;
             padding: 12px 15px;
             text-align: left;
             font-weight: 600;
-            border: 1px solid #333; /* [MODIFIED] Ensure all cells have borders */ 
+            border: 1px solid #333;
+            /* [MODIFIED] Ensure all cells have borders */
         }
 
         .items-table tbody tr {
+
             border-bottom: 1px solid var(--border-color);
         }
 
         .items-table td {
             vertical-align: top;
-            font-weight: normal; /* [MODIFIED] Reset font-weight for td */
+            font-weight: normal;
+            /* [MODIFIED] Reset font-weight for td */
         }
 
-        .items-table .description { 
+        .items-table .description {
             font-weight: 500;
         }
 
         .items-table .details {
+
             font-size: 13px;
             color: #666;
         }
@@ -15173,7 +15301,7 @@ margin: 0;
             text-align: right;
         }
 
-        .items-table .original-price { 
+        .items-table .original-price {
             text-decoration: line-through;
             color: #999;
             font-size: 14px;
@@ -15185,10 +15313,11 @@ margin: 0;
         }
 
         .items-table .is-excluded {
+
             text-decoration: line-through;
             color: #999;
         }
-        
+
         .table-scroll-wrapper {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
@@ -15198,10 +15327,11 @@ margin: 0;
         .summary-section {
             display: flex;
             justify-content: flex-end;
-            border: 1px solid var(--border-color);
+            /* [MODIFIED v6290 Task 3] Added Red border */
+            border: 2px solid #c0392b;
             border-radius: 4px;
             padding: 6px 20px 20px 20px;
-            width: 100%; /* [MODIFIED] Set to 100% to fit inside table cell */ 
+            width: 100%;
             box-sizing: border-box;
         }
 
@@ -15212,10 +15342,19 @@ margin: 0;
 
         .summary-details table {
             width: 100%;
+            /* [MODIFIED v6290 Task 3] */
+            border-collapse: collapse;
         }
 
-        .summary-details td { 
+        .summary-details td {
             padding: 8px 0;
+            /* [MODIFIED v6290 Task 3] All internal lines thin black */
+            border-top: 1px solid #333;
+        }
+
+        /* [NEW v6290 Task 3] Remove border from first row */
+        .summary-details tr:first-child td {
+            border-top: none;
         }
 
         .summary-details .summary-label {
@@ -15230,32 +15369,50 @@ margin: 0;
             padding-right: 10px;
         }
 
-        .summary-details .grand-total td { 
+        .summary-details .grand-total td {
             font-size: 18px;
             font-weight: bold;
             color: var(--primary-color);
-            border-top: 2px solid var(--primary-color);
+            /* [MODIFIED v6290 Task 3] Removed blue border-top override */
+            /* border-top: 2px solid var(--primary-color); */
             padding-top: 10px;
         }
+
 
         .summary-details .savings-value {
             color: var(--success-color);
             font-weight: bold;
         }
 
-        /* --- [MODIFIED] Wrapper for Summary and Payment sections using TABLE layout --- */
-        .summary-payment-wrapper { 
+        .summary-payment-wrapper {
             width: 100%;
             border-collapse: collapse;
         }
 
+        /* [MODIFIED v6290 Task 1] Desktop gap logic */
+        .summary-payment-wrapper .layout-cell {
+            vertical-align: top;
+        }
+
+        .summary-payment-wrapper .layout-cell-summary {
+            padding-left: 10px;
+            /* Gap on the left */
+        }
+
+        .summary-payment-wrapper .layout-cell-payment {
+            padding-right: 10px;
+            /* Gap on the right */
+        }
+
+
         .payment-info {
-            width: 100%; /* [MODIFIED] Set to 100% to fit inside table cell */
+            width: 100%;
             margin-top: 0;
             box-sizing: border-box;
-            border: 1px solid var(--border-color);
+            /* [MODIFIED v6290 Task 4] Added Blue border */
+            border: 2px solid var(--primary-color);
             border-radius: 4px;
-            padding: 20px; 
+            padding: 20px;
         }
 
         .payment-info h4 {
@@ -15267,53 +15424,101 @@ margin: 0;
             margin: 4px 0;
             font-size: 14px;
         }
-        
+
+
         .payment-table {
-            
+
             width: 100%;
             border-collapse: collapse;
             font-size: 1em;
+            margin-top: 0;
+            /* [MODIFIED] Removed margin-top */
+            border: none;
+            /* [MODIFIED] Removed table border */
         }
+
         .payment-table td {
             padding: 6px 0;
             border-bottom: 1px solid lightblue;
         }
+
         .payment-table tr:last-child td {
             border-bottom: none;
         }
 
-        .payment-table tr:last-child {
-            background-color: #f5f5f5; 
+        .payment-table .payid-row td {
+            border-bottom: none;
+            /* PayID row has no bottom border */
         }
+
+        .payment-table .payid-row {
+            background-color: #f5f5f5;
+        }
+
         .payment-table td:first-child {
             font-weight: bold;
             width: 80px;
             text-align: right;
             padding-right: 2px;
         }
+
         .payment-table td:nth-child(2) {
             text-align: left;
             padding-left: 4px;
             border-left: 1px solid var(--border-color);
         }
-        
-        .payment-info strong { 
+
+        .payment-info strong {
+
             display: inline-block;
             width: 80px;
         }
+
+        /* [NEW v6290 Task 2] New styles for payment block */
+        .payment-group-border {
+            border: 1px solid #b0b8c4;
+            /* Softer border */
+            border-radius: 4px;
+            margin-top: 10px;
+            overflow: hidden;
+            /* To clip the table corners */
+        }
+
+        .payid-separator {
+            font-size: 12px;
+            font-style: italic;
+            color: #E65100;
+            /* Darker Orange */
+            text-align: center;
+            margin: 15px 0 10px 0;
+        }
+
+        .payment-reference-text {
+            font-size: 12px;
+            margin-top: 15px;
+            font-style: italic;
+            /* [NEW v6290 Task 3] Added text wrapping */
+            white-space: normal;
+            word-wrap: break-word;
+        }
+
+        /* End of new payment styles */
+
 
         .notes-terms-box {
             width: 100%;
             margin-top: 30px;
             padding: 20px;
-            background-color: #f9f9f9;
-            border: 1px solid var(--border-color);
+            background-color: #f9f9ff;
+            /* Lighter background */
+            border: 1px solid #b0b8c4;
+            /* Softer border */
             border-radius: 4px;
             box-sizing: border-box;
         }
 
         .notes-terms-box h4 {
-            
+
             margin-top: 0;
             color: var(--primary-color);
         }
@@ -15325,19 +15530,20 @@ margin: 0;
             white-space: normal;
             word-wrap: break-word;
         }
-        
+
         .footer {
             margin-top: 40px;
             padding-top: 20px;
             border-top: 1px solid var(--border-color);
-            font-size: 12px; 
+            font-size: 12px;
             color: #888;
             text-align: center;
         }
 
         .terms {
-            margin-top: 20px; 
+            margin-top: 20px;
         }
+
 
 
         @media (max-width: 768px) {
@@ -15345,7 +15551,7 @@ margin: 0;
                 padding: 10px;
             }
 
-            .quotation-inner-wrapper { 
+            .quotation-inner-wrapper {
                 padding: 20px;
             }
 
@@ -15354,66 +15560,93 @@ margin: 0;
                 align-items: stretch;
             }
 
+            /* [MODIFIED v6290 Task 2] Swapped order */
             .quotation-meta {
-                order: 1; 
+                order: 2;
             }
 
+            /* [MODIFIED v6290 Task 1 & 2] Swapped order and aligned right */
             .company-details {
-                order: 2;
+                order: 1;
                 margin-top: 20px;
+                text-align: right;
             }
 
             .company-details,
             .quotation-meta {
-                text-align: left; 
+                /* [MODIFIED v6290 Task 2] Remove forced left align */
+                /* text-align: left; */
             }
 
             .company-details p {
-                justify-content: flex-start;
+                /* [MODIFIED v6290 Task 2] Align text right */
+                justify-content: flex-end;
             }
 
             .company-details .abn-line {
                 padding-right: 0;
             }
 
-            .company-details .icon { 
+            .company-details .icon {
+
                 order: -1;
                 margin-left: 0;
                 margin-right: 8px;
             }
 
-            /* [NEW] Force table layout cells to stack on mobile */
+            /* [MODIFIED v6290 Task 2] Swapped layout-cell order logic */
             .summary-payment-wrapper .layout-cell {
                 display: block;
-                width: 100%; 
+                width: 100%;
                 box-sizing: border-box;
-                padding: 0 !important; /* Reset padding */
-            }
-            .summary-payment-wrapper .layout-cell:first-child {
-                margin-bottom: 20px; /* Add space between stacked elements */
+                padding: 0 !important;
+                /* Reset padding for mobile */
             }
 
-            .payment-info, 
+            /* [MODIFIED v6290 Task 2] Space now goes AFTER the summary (which is first) */
+            .summary-payment-wrapper .layout-cell-summary {
+                margin-bottom: 20px;
+                padding-right: 0 !important;
+                /* Reset desktop gap */
+            }
+
+            .summary-payment-wrapper .layout-cell-payment {
+                padding-left: 0 !important;
+                /* Reset desktop gap */
+            }
+
+
+            /* [MODIFIED v6290 Task 4] Added min-width and box-sizing */
+            .payment-info,
             .summary-section {
                 width: 100%;
                 box-sizing: border-box;
+                min-width: 280px;
+                /* X */
             }
 
+            /* [MODIFIED v6290 Task 4] Added min-width and box-sizing */
             .notes-terms-box {
                 width: 100%;
+                min-width: 280px;
+                /* X */
+                box-sizing: border-box;
             }
 
-            .table-scroll-wrapper { 
+            .table-scroll-wrapper {
                 overflow-x: auto;
             }
 
+            /* --- [MODIFIED] --- */
+            /* This is the "Card Mode" CSS you want to avoid during Print */
             .items-table {
                 border: none;
                 display: block;
                 table-layout: auto;
             }
+
             .items-table thead {
-                border: none; 
+                border: none;
                 clip: rect(0 0 0 0);
                 height: 1px;
                 margin: -1px;
@@ -15422,16 +15655,19 @@ margin: 0;
                 position: absolute;
                 width: 1px;
             }
+
             .items-table tr {
                 display: block;
                 margin-bottom: 15px;
                 border: 1px solid var(--border-color);
                 border-radius: 5px;
                 padding: 0;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
                 min-width: 280px;
+                /* This is X */
             }
-            .items-table td { 
+
+            .items-table td {
                 display: flex;
                 justify-content: space-between;
                 padding: 10px 15px;
@@ -15439,45 +15675,54 @@ margin: 0;
                 border-bottom: 1px solid var(--border-color);
                 text-align: right;
             }
+
             .items-table tr td:last-child {
                 border-bottom: none;
             }
-            .items-table td:before { 
+
+            .items-table td:before {
+
                 content: attr(data-label);
                 font-weight: 600;
                 text-align: left;
                 padding-right: 15px;
                 color: #333;
-                flex-shrink: 0; 
+                flex-shrink: 0;
             }
+
             .items-table td:first-of-type {
                 background-color: var(--primary-color);
                 color: white;
                 font-weight: bold;
                 border-radius: 4px 4px 0 0;
             }
-            .items-table td:first-of-type::before { 
+
+            .items-table td:first-of-type::before {
                 color: white;
             }
+
         }
 
         /* [MODIFIED v6285 Print Optimization] */
         @media print {
+
             /* Force background colors and remove action bar (Problem 1 & 2) */
             * {
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
             }
+
             #action-bar {
                 display: none !important;
             }
-            
+
             /* [FIX] Reset body padding/margin, but allow containers to use their own */
             body {
                 background-color: #fff;
                 padding: 0;
                 margin: 0;
             }
+
 
             /* [FIX] Only remove shadows, DO NOT remove padding or border */
             .quotation-container,
@@ -15487,11 +15732,67 @@ margin: 0;
 
             /* Prevent content breaking (v6281 Plan) */
             .items-table tr,
+
             .summary-section,
             .payment-info,
             .notes-terms-box,
             .summary-payment-wrapper tr {
                 page-break-inside: avoid;
+            }
+
+            /* --- [NEW] Print Override for Mobile Card View --- */
+            /* This block is from the previous analysis (Task 3) */
+            /* Âº∑Âà∂?¢Âæ©Ë°®Ê†º‰ΩàÂ? */
+            .items-table {
+                display: table !important;
+                table-layout: fixed !important;
+                /* Á¢∫‰?Ë°®Ê†ºÂØ¨Â∫¶Ê≠?¢∫ */
+            }
+
+            /* Âº∑Âà∂È°ØÁ§∫Ë°®Ê†ºÊ®ôÈ†≠ */
+            .items-table thead {
+                display: table-header-group !important;
+                /* ?çÁΩÆ?±Ë?Ê®?? */
+                position: static !important;
+                height: auto !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: auto !important;
+            }
+
+            /* Âº∑Âà∂?¢Âæ©Ë°®Ê†ºË°?*/
+            .items-table tr {
+                display: table-row !important;
+                margin-bottom: 0 !important;
+                border: 1px solid #333 !important;
+                /* ?¢Âæ©?óÂç∞?ÇÁ??äÊ? */
+                box-shadow: none !important;
+                min-width: 0 !important;
+                /* [FIX] Reset min-width for print */
+            }
+
+            /* Âº∑Âà∂?¢Âæ©Ë°®Ê†º?≤Â???*/
+            .items-table td {
+                display: table-cell !important;
+                justify-content: flex-start !important;
+                /* ?¢Âæ©?êË®≠ */
+                padding: 10px 12px !important;
+                /* ?¢Âæ©?ßË? */
+                border-bottom: 1px solid #333 !important;
+                /* ?¢Âæ©?óÂç∞?ÇÁ??äÊ? */
+            }
+
+            /* Âº∑Âà∂?±Ë??°Á?Ê®°Â??ÑÊ?Á±?*/
+            .items-table td:before {
+                content: none !important;
+                display: none !important;
+            }
+
+            /* [MODIFIED v6290 Task 2] Ensure these elements don't have min-width in print */
+            .payment-info,
+            .summary-section,
+            .notes-terms-box {
+                min-width: 0 !important;
             }
         }
     </style>
@@ -15501,143 +15802,144 @@ margin: 0;
     <div class="quotation-container">
         <div class="quotation-inner-wrapper">
 
+
             <header class="header">
-                <div class="quotation-meta"> 
+                <div class="quotation-meta">
                     <h2>QUOTATION</h2>
                     <p><strong>Quote No:</strong> {{quoteId}}</p>
                     <p><strong>Issue Date:</strong> {{issueDate}}</p>
-                    <p><strong>Due Date:</strong> {{dueDate}}</p> 
+
+                    <p><strong>Due Date:</strong> {{dueDate}}</p>
                 </div>
                 <div class="company-details">
                     <h1>EZ Blinds & Shutters</h1>
-                    <p class="abn-line">ABN: 52 62 74 20 777</p> 
-                    <p>U11 / 271 Wells Rd, Chelsea Heights<span class="icon">??</span></p>
+                    <p class="abn-line">ABN: 52 62 74
+                        20 777</p>
+                    <p>U11 / 271 Wells Rd, Chelsea Heights<span class="icon">&#128205;</span></p>
                     <p>
-                        <span>0466 965 168<span class="icon">??</span></span> 
-                        <span style="margin: 0 10px;">|</span>
-                        <span>ezblinds@ezbns.com.au<span class="icon">?ìß</span></span>
-                    </p> 
-                    <p>www.ezbns.com.au<span class="icon">??</span></p>
+                        <span>0466 965 168<span class="icon">&#128222;</span></span>
+                    </p>
+                    <p>
+                        <span>ezblinds@ezbns.com.au<span class="icon">&#128231;</span></span>
+                    </p>
+                    <p>www.ezbns.com.au<span class="icon">&#127760;</span></p>
                 </div>
+
             </header>
 
             <main>
-                <section class="customer-info"> 
+                <section class="customer-info">
                     <p>{{{customerInfoHtml}}}</p>
                 </section>
 
                 <section class="items-section">
+
                     <div class="table-scroll-wrapper">
-                        <table class="items-table" border="1" cellpadding="0" cellspacing="0"> 
-                            <colgroup>
-                                <col style="width: 8%;"> 
-                                <col style="width: 42%;">
-                                <col style="width: 15%;">
-                                <col style="width: 17.5%;"> 
-                                <col style="width: 17.5%;">
-                            </colgroup> 
-                            <thead>
-                                <tr>
-                                    <th>NO</th> 
-                                    <th>Description</th>
-                                    <th class="align-right">QTY</th> 
-                                    <th class="align-right">Price</th>
-                                    <th class="align-right">Discounted Price</th> 
-                                </tr>
-                            </thead> 
-                            <tbody>
-                                {{{itemsTableBody}}}
-                            </tbody> 
-                        </table>
+                        {{{itemsTableBody}}}
                     </div>
                 </section>
-
-                <table class="summary-payment-wrapper" border="0" cellpadding="0" cellspacing="0" width="100%"> 
+                <table class="summary-payment-wrapper" border="0" cellpadding="0" cellspacing="0" width="100%">
                     <tbody>
                         <tr>
-                            <td class="layout-cell" width="50%" style="padding-right: 10px; vertical-align: top;"> 
+                            <td class="layout-cell layout-cell-payment" width="50%">
                                 <section class="payment-info">
-                                    <h4>Payment Method</h4> 
-                                    <table class="payment-table">
-                                        <tbody> 
-                                            <tr>
-                                                <td>Bank</td> 
-                                                <td>CBA</td>
-                                            </tr> 
-                                            <tr>
-                                                <td>BSB</td> 
-                                                <td>0 6 2 &nbsp;&nbsp; 6 9 2</td> 
-                                            </tr>
-                                            <tr> 
-                                                <td>Account</td>
-                                                <td>4 5 7 0 &nbsp;&nbsp; 8 8 7 7</td> 
-                                            </tr> 
-                                            <tr>
-                                                <td>Name</td> 
-                                                <td>Alphalead &nbsp;Pty &nbsp;Ltd</td> 
-                                            </tr>
-                                            <tr> 
-                                                <td>PayID</td>
-                                                <td>6 2 7 &nbsp;&nbsp; 4 2 0 &nbsp;&nbsp; 7 7 7</td> 
-                                            </tr> 
-                                        </tbody>
-                                    </table>
-                                    <p style="font-size: 12px; margin-top: 10px;"><em>Please leave your Ph. number as Ref. in the 
-                                            transaction.</em></p> 
-                                </section>
-                            </td>
-                            <td class="layout-cell" width="50%" style="padding-left: 10px; vertical-align: top;"> 
-                                <section class="summary-section">
-                                    <div class="summary-details"> 
-                                        <table>
-                                            <tbody> 
+                                    <h4>Payment Method</h4>
+
+                                    <div class="payment-group-border">
+                                        <table class="payment-table">
+                                            <tbody>
                                                 <tr>
-                                                    <td class="summary-label">Subtotal</td> 
-                                                    <td class="summary-value">{{subtotal}}</td> 
+                                                    <td>Bank</td>
+                                                    <td>CBA</td>
                                                 </tr>
-                                                <tr> 
-                                                    <td class="summary-label">GST (10%)</td> 
-                                                    <td class="summary-value">{{gst}}</td>
-                                                </tr> 
-                                                <tr class="grand-total"> 
-                                                    <td class="summary-label">Our Offer</td>
-                                                    <td class="summary-value">{{grandTotal}}</td> 
-                                                </tr>
-                                                <tr> 
-                                                    <td class="summary-label">Deposit (50%)</td> 
-                                                    <td class="summary-value">{{deposit}}</td>
-                                                </tr> 
-                                                <tr> 
-                                                    <td class="summary-label"><strong>Balance</strong></td>
-                                                    <td class="summary-value"><strong>{{balance}}</strong></td> 
-                                                </tr> 
                                                 <tr>
-                                                    <td class="summary-label">You Saved</td> 
-                                                    <td class="summary-value savings-value">{{savings}}</td> 
+                                                    <td>BSB</td>
+                                                    <td>0 6 2 &nbsp;&nbsp; 6 9 2</td>
                                                 </tr>
-                                            </tbody> 
+                                                <tr>
+                                                    <td>Account</td>
+                                                    <td>4 5 7 0 &nbsp;&nbsp; 8 8 7 7</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Name</td>
+                                                    <td>Alphalead &nbsp;Pty &nbsp;Ltd</td>
+                                                </tr>
+                                            </tbody>
                                         </table>
-                                    </div> 
+                                    </div>
+
+                                    <p class="payid-separator">Or, pay securely via our ACN PayID.</p>
+
+                                    <div class="payment-group-border">
+                                        <table class="payment-table">
+                                            <tbody>
+                                                <tr class="payid-row">
+                                                    <td>PayID</td>
+                                                    <td>6 2 7 &nbsp;&nbsp; 4 2 0 &nbsp;&nbsp; 7 7 7</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <p class="payment-reference-text"><em>Please leave your Ph. number as Ref. in the
+                                            transaction.</em></p>
                                 </section>
                             </td>
-                        </tr> 
+                            <td class="layout-cell layout-cell-summary" width="50%">
+                                <section class="summary-section">
+                                    <div class="summary-details">
+                                        <table>
+                                            <tbody>
+                                                <tr>
+                                                    <td class="summary-label">Subtotal</td>
+                                                    <td class="summary-value">{{subtotal}}</td>
+                                                </tr>
+                                                <tr class="grand-total">
+                                                    <td class="summary-label">Our Offer</td>
+                                                    <td class="summary-value">{{grandTotal}}</td>
+                                                </tr>
+
+                                                {{{gstRowHtml}}}
+
+                                                <tr class="grand-total" style="color: #FF69B4; border-color: #FF69B4;">
+                                                    <td class="summary-label" style="color: #FF69B4;">Total</td>
+                                                    <td class="summary-value" style="color: #FF69B4;">{{grandTotal}}
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="summary-label">Deposit</td>
+                                                    <td class="summary-value">{{deposit}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="summary-label"><strong>Balance</strong></td>
+                                                    <td class="summary-value"><strong>{{balance}}</strong></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+
+                                    </div>
+                                </section>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
 
                 <section class="notes-terms-box">
-                    <h4>General Notes</h4> 
+                    <h4>General Notes</h4>
+
                     <p>{{{generalNotes}}}</p>
                 </section>
 
                 <section class="terms notes-terms-box">
-                    <h4>Terms & Conditions</h4> 
+                    <h4>Terms & Conditions</h4>
                     {{{termsAndConditions}}}
+
                 </section>
 
             </main>
 
             <footer class="footer">
-                <p>Thank you for your business!</p> 
+                <p>Thank you for your business!</p>
                 <p><strong>EZ Blinds & Shutters</strong></p>
             </footer>
 
@@ -15674,22 +15976,26 @@ margin: 0;
                 <div class="grid-cell grid-span-2">Component Cost</div>
                 <div class="grid-cell price-box bg-light-purple" id="f1-price-total"></div>
 
+
                 <div class="grid-cell font-bold">Item</div>
                 <div class="grid-cell font-bold" style="justify-content: center;">Qty</div>
                 <div class="grid-cell font-bold" style="justify-content: center;">$</div>
 
                 <div class="grid-cell">HD Winder</div>
                 <div class="grid-cell qty-box" id="f1-qty-winder"></div>
+
                 <div class="grid-cell price-box bg-bright-green" id="f1-price-winder"></div>
 
                 <div class="group-row group-row-dual">
                     <div class="grid-cell">Dual Combo</div>
                     <div class="grid-cell qty-box" id="f1-qty-dual-combo"></div>
+
                     <div class="grid-cell price-box bg-bright-green" id="f1-price-dual-combo"></div>
                 </div>
                 <div class="group-row group-row-dual">
                     <div class="grid-cell">Dual Slim</div>
                     <div class="grid-cell qty-box" id="f1-qty-slim"></div>
+
                     <div class="grid-cell price-box bg-bright-green" id="f1-price-slim"></div>
                 </div>
 
@@ -15697,16 +16003,19 @@ margin: 0;
                 <div class="grid-cell qty-box" id="f1-qty-motor"></div>
                 <div class="grid-cell price-box bg-bright-green" id="f1-price-motor"></div>
 
+
                 <div class="group-row group-row-remote">
                     <div class="grid-cell">Remote 1 Ch</div>
                     <div class="grid-cell qty-box" id="f1-qty-remote-1ch"></div>
                     <div class="grid-cell price-box bg-bright-green" id="f1-price-remote-1ch"></div>
                 </div>
+
                 <div class="group-row group-row-remote">
                     <div class="grid-cell">Remote 16 Ch</div>
                     <div class="grid-cell qty-box" id="f1-qty-remote-16ch"></div>
                     <div class="grid-cell price-box bg-bright-green" id="f1-price-remote-16ch"></div>
                 </div>
+
 
                 <div class="grid-cell">Charger</div>
                 <div class="grid-cell qty-box" id="f1-qty-charger"></div>
@@ -15714,6 +16023,7 @@ margin: 0;
 
                 <div class="grid-cell">3M cord</div>
                 <div class="grid-cell qty-box" id="f1-qty-3m-cord"></div>
+
                 <div class="grid-cell price-box bg-bright-green" id="f1-price-3m-cord"></div>
             </div>
 
@@ -15727,12 +16037,14 @@ margin: 0;
                     <input type="number" class="input-box" id="f1-rb-discount-input" placeholder="%">
                 </div>
                 <div class="grid-cell price-box bg-light-purple" id="f1-rb-price"></div>
+
             </div>
 
             <div class="final-summary-group">
                 <div class="grid-cell">Final Summary</div>
                 <div class="grid-cell font-bold text-right">Sub Total</div>
                 <div class="grid-cell price-box bg-light-purple" id="f1-sub-total"></div>
+
 
                 <div class="grid-cell grid-col-start-2 font-bold text-right">GST</div>
                 <div class="grid-cell price-box bg-bright-green" id="f1-gst"></div>
@@ -15743,6 +16055,7 @@ margin: 0;
         </div>
     </div>
     <div id="f2-content" class="tab-content">
+
         <div class="f2-summary-grid">
             <div class="section-header">Accessories</div>
             <div class="grid-cell-value section-header-total" id="f2-b4-acce-sum">$0</div>
@@ -15752,6 +16065,7 @@ margin: 0;
             <div></div>
 
             <div class="grid-cell-label">Dual</div>
+
             <div class="grid-cell-value" id="f2-b3-dual-price">$0</div>
             <div></div>
 
@@ -15763,6 +16077,7 @@ margin: 0;
             <div></div>
 
             <div class="grid-cell-label">Remote</div>
+
             <div class="grid-cell-value" id="f2-b7-remote-price">$0</div>
             <div></div>
 
@@ -15772,6 +16087,7 @@ margin: 0;
 
             <div class="grid-cell-label">Ext Cord</div>
             <div class="grid-cell-value" id="f2-b9-cord-price">$0</div>
+
             <div></div>
 
             <div class="grid-cell-label">WIFI $200</div>
@@ -15782,6 +16098,7 @@ margin: 0;
             <div class="grid-cell-value section-header-total" id="f2-b16-surcharge-fee">$0</div>
 
             <div class="grid-cell-label">Delivery</div>
+
             <input type="number" class="grid-cell-input" id="f2-b13-delivery-qty" placeholder="QTY">
             <div class="grid-cell-value" id="f2-c13-delivery-fee">$0</div>
 
@@ -15800,6 +16117,7 @@ margin: 0;
             <div class="grid-cell-value" id="f2-c17-1st-rb-price"></div>
 
             <div class="grid-cell-label">Disc. %</div>
+
             <input type="number" class="grid-cell-input" id="f2-b18-discount" placeholder="discount" min="0" max="99">
             <div class="grid-cell-value" id="f2-b19-dis-rb-price"></div>
 
@@ -15809,6 +16127,7 @@ margin: 0;
 
             <div class="grid-cell-label">RB Profit</div>
             <div class="grid-cell-value" id="f2-b21-rb-profit"></div>
+
             <div></div>
 
             <div class="section-header">Selling Price</div>
@@ -15818,16 +16137,26 @@ margin: 0;
             <input type="number" class="grid-cell-input" id="new-offer" value="0.00" onfocus="this.select();">
 
             <div></div>
+
             <div class="grid-cell-label" id="f2-label-gst" style="justify-content: flex-end; padding-right: 10px;">GST
             </div>
             <div class="grid-cell-value" id="f2-b24-gst"></div>
+
             <div class="section-header text-red">Total</div>
             <div class="grid-cell-value section-header-total" id="grand-total">$0.00</div>
 
             <div class="grid-cell-label">NET Profit</div>
             <div class="grid-cell-value" id="f2-b25-netprofit"></div>
+
             <div></div>
 
+            <div class="grid-cell-placeholder"></div>
+            <div class="grid-cell-label text-right">Deposit</div>
+            <input type="number" class="grid-cell-input bg-light-green" id="f2-deposit" onfocus="this.select();">
+
+            <div class="grid-cell-placeholder"></div>
+            <div class="grid-cell-label text-right">Balance</div>
+            <input type="number" class="grid-cell-input bg-light-orange" id="f2-balance" readonly>
         </div>
     </div>
     <div id="f3-content" class="tab-content">
@@ -15837,6 +16166,7 @@ margin: 0;
             <div class="grid-cell">Quote ID</div>
             <div class="grid-cell grid-span-2">
                 <input type="text" id="f3-quote-id" class="input-field">
+
             </div>
             <div></div>
             <div class="grid-cell">Issue Date</div>
@@ -15844,6 +16174,7 @@ margin: 0;
                 <input type="date" id="f3-issue-date" class="input-field">
             </div>
             <div></div>
+
             <div class="grid-cell">Due Date</div>
             <div class="grid-cell grid-span-2">
                 <input type="date" id="f3-due-date" class="input-field">
@@ -15852,6 +16183,7 @@ margin: 0;
             <div class="section-header grid-span-4">Customer Info</div>
 
             <div class="grid-cell">Customer Name</div>
+
             <div class="grid-cell grid-span-2">
                 <input type="text" id="f3-customer-name" class="input-field">
             </div>
@@ -15866,12 +16198,12 @@ margin: 0;
                 <input type="tel" id="f3-customer-phone" class="input-field">
             </div>
             <div></div>
+
             <div class="grid-cell">Email</div>
             <div class="grid-cell grid-span-2">
                 <input type="email" id="f3-customer-email" class="input-field">
             </div>
             <div></div>
-            <div class="section-header grid-span-4">Final Price Adjustment</div>
 
             <div class="section-header grid-span-4">Notes & Terms</div>
 
@@ -15881,6 +16213,7 @@ margin: 0;
             </div>
             <div></div>
             <div class="grid-cell">Terms & Conditions</div>
+
             <div class="grid-cell grid-span-2">
                 <textarea id="f3-terms-conditions" class="textarea-field" rows="4"></textarea>
             </div>
@@ -15889,6 +16222,7 @@ margin: 0;
 
             <div></div>
             <div class="grid-cell">
+
                 <button id="btn-add-quote" class="action-button">Add Quote</button>
             </div>
             <div class="grid-cell">
@@ -15898,6 +16232,7 @@ margin: 0;
         </div>
     </div>
     <div id="f4-content" class="tab-content">
+
         <div class="f4-grid">
             <button id="f1-key-save" class="f4-button">Save</button>
             <button id="f1-key-export" class="f4-button">Export</button>
@@ -17625,11 +17960,11 @@ export class F2SummaryView {
         this.stateService = stateService;
         this.calculationService = calculationService;
 
-        // [MODIFIED] (Phase 12) Move install-qty to the front of the sequence
+        // [MODIFIED] (Phase 12 & 13)
         this.f2InputSequence = [
             'f2-b14-install-qty', 'f2-b10-wifi-qty', 'f2-b13-delivery-qty',
             'f2-b15-removal-qty', 'f2-b17-mul-times', 'f2-b18-discount',
-            'new-offer'
+            'new-offer', 'f2-deposit' // 'f2-balance' is readonly, so no focus
         ];
 
         this._cacheF2Elements();
@@ -17642,6 +17977,7 @@ export class F2SummaryView {
         this.f2 = {
             b2_winderPrice: query('f2-b2-winder-price'),
             b3_dualPrice: query('f2-b3-dual-price'),
+
             b4_acceSum: query('f2-b4-acce-sum'),
             b6_motorPrice: query('f2-b6-motor-price'),
             b7_remotePrice: query('f2-b7-remote-price'),
@@ -17650,6 +17986,7 @@ export class F2SummaryView {
             b10_wifiQty: query('f2-b10-wifi-qty'),
             c10_wifiSum: query('f2-c10-wifi-sum'),
             b11_eAcceSum: query('f2-b11-e-acce-sum'),
+
             b13_deliveryQty: query('f2-b13-delivery-qty'),
             c13_deliveryFee: query('f2-c13-delivery-fee'),
             b14_installQty: query('f2-b14-install-qty'),
@@ -17657,6 +17994,7 @@ export class F2SummaryView {
             b15_removalQty: query('f2-b15-removal-qty'),
             c15_removalFee: query('f2-c15-removal-fee'),
             b16_surchargeFee: query('f2-b16-surcharge-fee'),
+
             a17_totalSum: query('f2-a17-total-sum'),
             b17_mulTimes: query('f2-b17-mul-times'),
             c17_1stRbPrice: query('f2-c17-1st-rb-price'),
@@ -17665,13 +18003,19 @@ export class F2SummaryView {
             b20_singleprofit: query('f2-b20-singleprofit'),
             f2_17_pre_sum: query('f2-17-pre-sum'), // [MODIFIED]
             b21_rbProfit: query('f2-b21-rb-profit'),
+
             b22_sumprice: query('f2-b22-sumprice'),
             // [REMOVED] b23_sumprofit: query('f2-b23-sumprofit'),
             new_offer: query('new-offer'), // [MODIFIED]
             label_gst: query('f2-label-gst'), // [NEW] (Phase 2)
             b24_gst: query('f2-b24-gst'),
             grand_total: query('grand-total'), // [MODIFIED]
+
             b25_netprofit: query('f2-b25-netprofit'),
+
+            // [NEW] v6290 Deposit/Balance
+            deposit: query('f2-deposit'),
+            balance: query('f2-balance'),
         };
     }
 
@@ -17694,11 +18038,13 @@ export class F2SummaryView {
         const f2Inputs = [
             this.f2.b10_wifiQty, this.f2.b13_deliveryQty, this.f2.b14_installQty,
             this.f2.b15_removalQty, this.f2.b17_mulTimes, this.f2.b18_discount,
-            this.f2.new_offer // [NEW] Add listener for new-offer
+            this.f2.new_offer, // [NEW] Add listener for new-offer
+            this.f2.deposit // [NEW] v6290 Add listener for deposit
         ];
         f2Inputs.forEach(input => setupF2InputListener(input));
 
         const feeCells = [
+
             { el: this.f2.c13_deliveryFee, type: 'delivery' },
             { el: this.f2.c14_installFee, type: 'install' },
             { el: this.f2.c15_removalFee, type: 'removal' }
@@ -17706,6 +18052,7 @@ export class F2SummaryView {
         feeCells.forEach(({ el, type }) => {
             if (el) {
                 el.addEventListener('click', () => {
+
                     this.handleToggleFeeExclusion({ feeType: type });
                 });
             }
@@ -17714,6 +18061,7 @@ export class F2SummaryView {
         // [NEW] (Phase 2) Add listener for GST toggle
         if (this.f2.label_gst) {
             this.f2.label_gst.addEventListener('click', () => {
+
                 this.handleToggleGstExclusion();
             });
         }
@@ -17792,6 +18140,13 @@ export class F2SummaryView {
             this.f2.new_offer.value = formatValue(newOfferValue);
         }
 
+        // [NEW] v6290 Render Deposit and Balance
+        if (document.activeElement !== this.f2.deposit) {
+            this.f2.deposit.value = formatValue(f2State.deposit);
+        }
+        // Balance is read-only, so no need to check activeElement
+        this.f2.balance.value = formatValue(f2State.balance);
+
 
         this.f2.c13_deliveryFee.classList.toggle('is-excluded', f2State.deliveryFeeExcluded);
         this.f2.c14_installFee.classList.toggle('is-excluded', f2State.installFeeExcluded);
@@ -17813,6 +18168,7 @@ export class F2SummaryView {
         // [NEW] (Phase 12) Auto-populate install Qty if it's null
         if (ui.f2.installQty === null) {
             // We use updatedQuoteData.products... to get the most current item list
+
             const items = updatedQuoteData.products[updatedQuoteData.currentProduct].items;
             const defaultInstallQty = items.length > 0 ? items.length - 1 : 0;
             if (defaultInstallQty >= 0) {
@@ -17850,6 +18206,7 @@ export class F2SummaryView {
             case 'f2-b17-mul-times': keyToUpdate = 'mulTimes'; break;
             case 'f2-b18-discount': keyToUpdate = 'discount'; break;
             case 'new-offer': keyToUpdate = 'newOffer'; break; // [NEW]
+            case 'f2-deposit': keyToUpdate = 'deposit'; break; // [NEW] v6290
         }
 
         if (keyToUpdate) {
@@ -17900,8 +18257,32 @@ export class F2SummaryView {
         // We let the `render` function read `summaryValues.newOffer` if `f2State.newOffer` is null.
 
         this.stateService.dispatch(uiActions.setF2Value('gst', summaryValues.new_gst)); // Dispatch new_gst to 'gst' state
+
         this.stateService.dispatch(uiActions.setF2Value('grandTotal', summaryValues.grandTotal));
         this.stateService.dispatch(uiActions.setF2Value('netProfit', summaryValues.netProfit));
+
+        // [NEW] v6290 Calculate and dispatch Deposit and Balance
+        const currentGrandTotal = summaryValues.grandTotal || 0;
+        const previousGrandTotalInState = ui.f2.grandTotal;
+        const grandTotalChanged = currentGrandTotal !== previousGrandTotalInState;
+
+        const autoDeposit = Math.ceil(Math.ceil(currentGrandTotal / 2) / 10) * 10;
+        const currentDepositInState = ui.f2.deposit;
+
+        let finalDeposit;
+        if (grandTotalChanged) {
+            // Rule 3C: grandTotal changed, force recalculation
+            finalDeposit = autoDeposit;
+        } else {
+            // grandTotal did not change. Keep user's value if it exists, otherwise use auto-calc.
+            finalDeposit = (currentDepositInState !== null && currentDepositInState !== undefined) ? currentDepositInState : autoDeposit;
+        }
+
+        // Rule 4: Balance = grandTotal - deposit
+        const finalBalance = currentGrandTotal - finalDeposit;
+
+        this.stateService.dispatch(uiActions.setF2Value('deposit', finalDeposit));
+        this.stateService.dispatch(uiActions.setF2Value('balance', finalBalance));
 
         // [REMOVED] The faulty for...in loop is now gone.
     }
