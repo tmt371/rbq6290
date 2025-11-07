@@ -7,15 +7,15 @@
 
     <title>{{documentTitle}}</title>
     <style>
-        /* --- ?šç”¨æ¨?? --- */
+        /* --- 通用樣式 --- */
         :root {
             --primary-color: #1a237e;
-            /* æ·±è? */
+            /* 深藍 */
             --border-color: #e0e0e0;
-            /* æ·ºç ° */
+            /* 淺灰 */
             --text-color: #333;
             --success-color: #2e7d32;
-            /* ç¶ è‰²ï¼Œç”¨?¼æ???*/
+            /* 綠色，用於折扣 */
             --icon-color: #888888;
 
         }
@@ -44,7 +44,7 @@
             border-radius: 8px;
         }
 
-        /* --- ? é? Header --- */
+        /* --- 頁首 Header --- */
         .header {
             display: flex;
             justify-content: space-between;
@@ -55,7 +55,7 @@
             margin-bottom: 30px;
         }
 
-        /* ?¬å ¸è³‡è? */
+        /* 公司資訊 */
         .company-details {
             text-align: right;
         }
@@ -76,7 +76,7 @@
             justify-content: flex-end;
         }
 
-        /* ?±åƒ¹è³‡è? */
+        /* 報價資訊 */
         .quotation-meta {
             text-align: left;
         }
@@ -86,7 +86,7 @@
             margin: 0 0 20px 0;
             font-size: 24px;
             color: #B22222;
-            /* Brick Red ç£šç???*/
+            /* Brick Red 磚紅色 */
         }
 
         .quotation-meta p {
@@ -116,7 +116,7 @@
             padding-right: 28px;
         }
 
-        /* --- å®¢æˆ¶è³‡è? --- */
+        /* --- 客戶資訊 --- */
         .customer-info {
             margin-bottom: 40px;
         }
@@ -127,7 +127,7 @@
             line-height: 1.6;
         }
 
-        /* --- ?±åƒ¹è¡¨æ ¼ --- */
+        /* --- 報價表格 --- */
         .items-table {
             width: 100%;
             border-collapse: collapse;
@@ -199,15 +199,15 @@
             -webkit-overflow-scrolling: touch;
         }
 
-        /* --- ç¸½ç? --- */
+        /* --- 總結 --- */
         .summary-section {
             display: flex;
             justify-content: flex-end;
-            border: 1px solid var(--border-color);
+            /* [MODIFIED v6290 Task 3] Added Red border */
+            border: 2px solid #c0392b;
             border-radius: 4px;
             padding: 6px 20px 20px 20px;
             width: 100%;
-            /* [MODIFIED] Set to 100% to fit inside table cell */
             box-sizing: border-box;
         }
 
@@ -218,11 +218,19 @@
 
         .summary-details table {
             width: 100%;
+            /* [MODIFIED v6290 Task 3] */
+            border-collapse: collapse;
         }
 
         .summary-details td {
-
             padding: 8px 0;
+            /* [MODIFIED v6290 Task 3] All internal lines thin black */
+            border-top: 1px solid #333;
+        }
+
+        /* [NEW v6290 Task 3] Remove border from first row */
+        .summary-details tr:first-child td {
+            border-top: none;
         }
 
         .summary-details .summary-label {
@@ -241,7 +249,8 @@
             font-size: 18px;
             font-weight: bold;
             color: var(--primary-color);
-            border-top: 2px solid var(--primary-color);
+            /* [MODIFIED v6290 Task 3] Removed blue border-top override */
+            /* border-top: 2px solid var(--primary-color); */
             padding-top: 10px;
         }
 
@@ -251,19 +260,33 @@
             font-weight: bold;
         }
 
-        /* --- [MODIFIED] Wrapper for Summary and Payment sections using TABLE layout --- */
         .summary-payment-wrapper {
             width: 100%;
             border-collapse: collapse;
         }
 
+        /* [MODIFIED v6290 Task 1] Desktop gap logic */
+        .summary-payment-wrapper .layout-cell {
+            vertical-align: top;
+        }
+
+        .summary-payment-wrapper .layout-cell-summary {
+            padding-right: 10px;
+            /* Gap on the right */
+        }
+
+        .summary-payment-wrapper .layout-cell-payment {
+            padding-left: 10px;
+            /* Gap on the left */
+        }
+
+
         .payment-info {
             width: 100%;
-            /* [MODIFIED] Set 
- to 100% to fit inside table cell */
             margin-top: 0;
             box-sizing: border-box;
-            border: 1px solid var(--border-color);
+            /* [MODIFIED v6290 Task 4] Added Blue border */
+            border: 2px solid var(--primary-color);
             border-radius: 4px;
             padding: 20px;
         }
@@ -284,6 +307,10 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 1em;
+            margin-top: 0;
+            /* [MODIFIED] Removed margin-top */
+            border: none;
+            /* [MODIFIED] Removed table border */
         }
 
         .payment-table td {
@@ -295,7 +322,12 @@
             border-bottom: none;
         }
 
-        .payment-table tr:last-child {
+        .payment-table .payid-row td {
+            border-bottom: none;
+            /* PayID row has no bottom border */
+        }
+
+        .payment-table .payid-row {
             background-color: #f5f5f5;
         }
 
@@ -318,12 +350,42 @@
             width: 80px;
         }
 
+        /* [NEW v6290 Task 2] New styles for payment block */
+        .payment-group-border {
+            border: 1px solid #b0b8c4;
+            /* Softer border */
+            border-radius: 4px;
+            margin-top: 10px;
+            overflow: hidden;
+            /* To clip the table corners */
+        }
+
+        .payid-separator {
+            font-size: 12px;
+            font-style: italic;
+            color: #E65100;
+            /* Darker Orange */
+            text-align: center;
+            margin: 15px 0 10px 0;
+        }
+
+        .payment-reference-text {
+            font-size: 12px;
+            margin-top: 15px;
+            font-style: italic;
+        }
+
+        /* End of new payment styles */
+
+
         .notes-terms-box {
             width: 100%;
             margin-top: 30px;
             padding: 20px;
-            background-color: #f9f9f9;
-            border: 1px solid var(--border-color);
+            background-color: #f9f9ff;
+            /* Lighter background */
+            border: 1px solid #b0b8c4;
+            /* Softer border */
             border-radius: 4px;
             box-sizing: border-box;
         }
@@ -371,23 +433,27 @@
                 align-items: stretch;
             }
 
+            /* [MODIFIED v6290 Task 1] Swapped order */
             .quotation-meta {
-                order: 1;
+                order: 2;
             }
 
+            /* [MODIFIED v6290 Task 1 & 2] Swapped order and aligned right */
             .company-details {
-                order: 2;
+                order: 1;
                 margin-top: 20px;
+                text-align: right;
             }
 
             .company-details,
             .quotation-meta {
-
-                text-align: left;
+                /* [MODIFIED v6290 Task 2] Remove forced left align */
+                /* text-align: left; */
             }
 
             .company-details p {
-                justify-content: flex-start;
+                /* [MODIFIED v6290 Task 2] Align text right */
+                justify-content: flex-end;
             }
 
             .company-details .abn-line {
@@ -401,35 +467,51 @@
                 margin-right: 8px;
             }
 
-            /* [NEW] Force table layout cells to stack on mobile */
+            /* [MODIFIED v6290 Task 2] Swapped layout-cell order logic */
             .summary-payment-wrapper .layout-cell {
                 display: block;
                 width: 100%;
                 box-sizing: border-box;
                 padding: 0 !important;
-                /* Reset padding */
+                /* Reset padding for mobile */
             }
 
-            .summary-payment-wrapper .layout-cell:first-child {
+            /* [MODIFIED v6290 Task 2] Space now goes AFTER the summary (which is first) */
+            .summary-payment-wrapper .layout-cell-summary {
                 margin-bottom: 20px;
-                /* Add space between stacked elements */
+                padding-right: 0 !important;
+                /* Reset desktop gap */
             }
 
+            .summary-payment-wrapper .layout-cell-payment {
+                padding-left: 0 !important;
+                /* Reset desktop gap */
+            }
+
+
+            /* [MODIFIED v6290 Task 2 - User Req 2] Added min-width and box-sizing */
             .payment-info,
             .summary-section {
                 width: 100%;
                 box-sizing: border-box;
+                min-width: 280px;
+                /* X */
             }
 
-
+            /* [MODIFIED v6290 Task 2 - User Req 2] Added min-width and box-sizing */
             .notes-terms-box {
                 width: 100%;
+                min-width: 280px;
+                /* X */
+                box-sizing: border-box;
             }
 
             .table-scroll-wrapper {
                 overflow-x: auto;
             }
 
+            /* --- [MODIFIED] --- */
+            /* This is the "Card Mode" CSS you want to avoid during Print */
             .items-table {
                 border: none;
                 display: block;
@@ -455,6 +537,7 @@
                 padding: 0;
                 box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
                 min-width: 280px;
+                /* This is X */
             }
 
             .items-table td {
@@ -529,6 +612,61 @@
             .summary-payment-wrapper tr {
                 page-break-inside: avoid;
             }
+
+            /* --- [NEW] Print Override for Mobile Card View --- */
+            /* This block is from the previous analysis (Task 3) */
+            /* 強制恢復表格佈局 */
+            .items-table {
+                display: table !important;
+                table-layout: fixed !important;
+                /* 確保表格寬度正確 */
+            }
+
+            /* 強制顯示表格標頭 */
+            .items-table thead {
+                display: table-header-group !important;
+                /* 重置隱藏樣式 */
+                position: static !important;
+                height: auto !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: auto !important;
+            }
+
+            /* 強制恢復表格行 */
+            .items-table tr {
+                display: table-row !important;
+                margin-bottom: 0 !important;
+                border: 1px solid #333 !important;
+                /* 恢復列印時的邊框 */
+                box-shadow: none !important;
+                min-width: 0 !important;
+                /* [FIX] Reset min-width for print */
+            }
+
+            /* 強制恢復表格儲存格 */
+            .items-table td {
+                display: table-cell !important;
+                justify-content: flex-start !important;
+                /* 恢復預設 */
+                padding: 10px 12px !important;
+                /* 恢復內距 */
+                border-bottom: 1px solid #333 !important;
+                /* 恢復列印時的邊框 */
+            }
+
+            /* 強制隱藏卡片模式的標籤 */
+            .items-table td:before {
+                content: none !important;
+                display: none !important;
+            }
+
+            /* [MODIFIED v6290 Task 2] Ensure these elements don't have min-width in print */
+            .payment-info,
+            .summary-section,
+            .notes-terms-box {
+                min-width: 0 !important;
+            }
         }
     </style>
 </head>
@@ -550,14 +688,14 @@
                     <h1>EZ Blinds & Shutters</h1>
                     <p class="abn-line">ABN: 52 62 74
                         20 777</p>
-                    <p>U11 / 271 Wells Rd, Chelsea Heights<span class="icon">??</span></p>
+                    <p>U11 / 271 Wells Rd, Chelsea Heights<span class="icon">&#128205;</span></p>
                     <p>
-                        <span>0466 965 168<span class="icon">??</span></span>
-
-                        <span style="margin: 0 10px;">|</span>
-                        <span>ezblinds@ezbns.com.au<span class="icon">?“§</span></span>
+                        <span>0466 965 168<span class="icon">&#128222;</span></span>
                     </p>
-                    <p>www.ezbns.com.au<span class="icon">??</span></p>
+                    <p>
+                        <span>ezblinds@ezbns.com.au<span class="icon">&#128231;</span></span>
+                    </p>
+                    <p>www.ezbns.com.au<span class="icon">&#127760;</span></p>
                 </div>
 
             </header>
@@ -570,93 +708,16 @@
                 <section class="items-section">
 
                     <div class="table-scroll-wrapper">
-                        <table class="items-table" border="1" cellpadding="0" cellspacing="0">
-                            <colgroup>
-
-                                <col style="width: 8%;">
-                                <col style="width: 42%;">
-                                <col style="width: 15%;">
-
-                                <col style="width: 17.5%;">
-                                <col style="width: 17.5%;">
-                            </colgroup>
-
-                            <thead>
-                                <tr>
-                                    <th>NO</th>
-
-                                    <th>Description</th>
-                                    <th class="align-right">QTY</th>
-                                    <th class="align-right">Price</th>
-
-                                    <th class="align-right">Discounted Price</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                {{{itemsTableBody}}}
-                            </tbody>
-
-                        </table>
+                        {{{itemsTableBody}}}
                     </div>
                 </section>
-
                 <table class="summary-payment-wrapper" border="0" cellpadding="0" cellspacing="0" width="100%">
                     <tbody>
-
                         <tr>
-                            <td class="layout-cell" width="50%" style="padding-right: 10px; vertical-align: top;">
-                                <section class="payment-info">
-
-                                    <h4>Payment Method</h4>
-                                    <table class="payment-table">
-
-                                        <tbody>
-                                            <tr>
-
-                                                <td>Bank</td>
-                                                <td>CBA</td>
-                                            </tr>
-
-                                            <tr>
-                                                <td>BSB</td>
-
-                                                <td>0 6 2 &nbsp;&nbsp; 6 9 2</td>
-                                            </tr>
-
-                                            <tr>
-                                                <td>Account</td>
-
-                                                <td>4 5 7 0 &nbsp;&nbsp; 8 8 7 7</td>
-                                            </tr>
-
-                                            <tr>
-                                                <td>Name</td>
-
-                                                <td>Alphalead &nbsp;Pty &nbsp;Ltd</td>
-                                            </tr>
-
-                                            <tr>
-                                                <td>PayID</td>
-
-                                                <td>6 2 7 &nbsp;&nbsp; 4 2 0 &nbsp;&nbsp; 7 7 7</td>
-                                            </tr>
-
-                                        </tbody>
-                                    </table>
-
-                                    <p style="font-size: 12px; margin-top: 10px;"><em>Please leave your Ph. number as
-                                            Ref. in the
-                                            transaction.</em></p>
-
-                                </section>
-                            </td>
-                            <td class="layout-cell" width="50%" style="padding-left: 10px; vertical-align: top;">
-
+                            <td class="layout-cell layout-cell-summary" width="50%">
                                 <section class="summary-section">
                                     <div class="summary-details">
                                         <table>
-
                                             <tbody>
                                                 <tr>
                                                     <td class="summary-label">Subtotal</td>
@@ -688,7 +749,50 @@
                                     </div>
                                 </section>
                             </td>
+                            <td class="layout-cell layout-cell-payment" width="50%">
+                                <section class="payment-info">
+                                    <h4>Payment Method</h4>
 
+                                    <div class="payment-group-border">
+                                        <table class="payment-table">
+                                            <tbody>
+                                                <tr>
+                                                    <td>Bank</td>
+                                                    <td>CBA</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>BSB</td>
+                                                    <td>0 6 2 &nbsp;&nbsp; 6 9 2</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Account</td>
+                                                    <td>4 5 7 0 &nbsp;&nbsp; 8 8 7 7</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Name</td>
+                                                    <td>Alphalead &nbsp;Pty &nbsp;Ltd</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <p class="payid-separator">Or, pay securely via our ACN PayID.</p>
+
+                                    <div class="payment-group-border">
+                                        <table class="payment-table">
+                                            <tbody>
+                                                <tr class="payid-row">
+                                                    <td>PayID</td>
+                                                    <td>6 2 7 &nbsp;&nbsp; 4 2 0 &nbsp;&nbsp; 7 7 7</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <p class="payment-reference-text"><em>Please leave your Ph. number as Ref. in the
+                                            transaction.</em></p>
+                                </section>
+                            </td>
                         </tr>
                     </tbody>
                 </table>

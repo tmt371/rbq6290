@@ -234,7 +234,7 @@ export class QuoteGeneratorService {
 
             // Ensure customer info is formatted
             customerInfoHtml: this._formatCustomerInfo(templateData),
-            // Ensure item list is formatted
+            // [MODIFIED v6290 Task 1] Ensure item list is formatted
             itemsTableBody: this._generatePageOneItemsTableHtml(templateData),
             // [NEW v6290 Task 2] Pass the conditional GST row
             gstRowHtml: gstRowHtml
@@ -281,6 +281,7 @@ export class QuoteGeneratorService {
         const populatedDataWithHtml = {
             ...templateData,
             customerInfoHtml: this._formatCustomerInfo(templateData),
+            // [MODIFIED v6290 Task 1] Use the single-table generator
             itemsTableBody: this._generatePageOneItemsTableHtml(templateData),
             rollerBlindsTable: this._generateItemsTableHtml(templateData),
             gstRowHtml: gstRowHtml // [NEW] Pass the conditional GST row
@@ -422,12 +423,12 @@ export class QuoteGeneratorService {
         `;
     }
 
+    // [MODIFIED v6290 Task 1] Rewritten function to generate a single table
     _generatePageOneItemsTableHtml(templateData) {
         const { summaryData, uiState, items } = templateData;
         const rows = [];
         const validItemCount = items.filter(i => i.width && i.height).length;
 
-        // [MODIFIED v6290] Use new helper function to build rows
         const createRow = (number, description, qty, price, discountedPrice, isExcluded = false) => {
             const priceStyle = isExcluded ? 'style="text-decoration: line-through; color: #999999;"' : '';
             const discountedPriceValue = isExcluded ? 0 : discountedPrice;
@@ -435,56 +436,17 @@ export class QuoteGeneratorService {
             const discountedPriceStyle = (discountedPrice < price) ? 'style="font-weight: bold; color: #d32f2f;"' : '';
 
             return `
-                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
-                    style="border-collapse: collapse; margin-bottom: 15px; border: 1px solid #e0e0e0; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                    <tbody>
-                        <tr>
-                            <td
-                                style="padding: 10px 15px; border-bottom: 1px solid #e0e0e0; background-color: #1a237e; color: white; border-radius: 4px 4px 0 0;">
-                                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="color: white;">
-                                    <tr>
-                                        <td width="50%" valign="top" style="text-align: left; font-weight: bold;">#${number}</td>
-                                        <td width="50%" valign="top" style="text-align: right; font-weight: normal;">${description}</td>
-                                    </tr>
-                                </table>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 10px 15px; border-bottom: 1px solid #e0e0e0;">
-                                <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                    <tr>
-                                        <td width="50%" valign="top" style="text-align: left; font-weight: 600;">QTY</td>
-                                        <td width="50%" valign="top" style="text-align: right;">${qty}</td>
-                                    </tr>
-                                </table>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 10px 15px; border-bottom: 1px solid #e0e0e0;">
-                                <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                    <tr>
-                                        <td width="50%" valign="top" style="text-align: left; font-weight: 600;">Price</td>
-                                        <td width="50%" valign="top" style="text-align: right;">
-                                            <span ${priceStyle}>$${price.toFixed(2)}</span>
-                                        </td>
-                                    </tr>
-                                </table>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 10px 15px;">
-                                <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                    <tr>
-                                        <td width="50%" valign="top" style="text-align: left; font-weight: 600;">Discounted Price</td>
-                                        <td width="50%" valign="top" style="text-align: right;">
-                                            <span ${discountedPriceStyle}>$${discountedPriceValue.toFixed(2)}</span>
-                                        </td>
-                                    </tr>
-                                </table>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <tr>
+                    <td data-label="NO">${number}</td>
+                    <td data-label="Description" class="description">${description}</td>
+                    <td data-label="QTY" class="align-right">${qty}</td>
+                    <td data-label="Price" class="align-right">
+                        <span class="original-price" ${priceStyle}>$${price.toFixed(2)}</span>
+                    </td>
+                    <td data-label="Discounted Price" class="align-right">
+                        <span class="discounted-price" ${discountedPriceStyle}>$${discountedPriceValue.toFixed(2)}</span>
+                    </td>
+                </tr>
             `;
         };
 
@@ -533,7 +495,6 @@ export class QuoteGeneratorService {
         ));
 
         // Row 5: Installation
-        // [MODIFIED v6290 Bug 1 Fix]
         const installExcluded = uiState.f2.installFeeExcluded;
         rows.push(createRow(
             itemNumber++,
@@ -555,6 +516,29 @@ export class QuoteGeneratorService {
             removalExcluded
         ));
 
-        return rows.join('');
+        // Return the full table structure
+        return `
+            <table class="items-table" border="1" cellpadding="0" cellspacing="0"> 
+                <colgroup>
+                    <col style="width: 8%;"> 
+                    <col style="width: 42%;">
+                    <col style="width: 15%;">
+                    <col style="width: 17.5%;"> 
+                    <col style="width: 17.5%;">
+                </colgroup> 
+                <thead>
+                    <tr>
+                        <th>NO</th> 
+                        <th>Description</th>
+                        <th class="align-right">QTY</th> 
+                        <th class="align-right">Price</th>
+                        <th class="align-right">Discounted Price</th> 
+                    </tr>
+                </thead> 
+                <tbody>
+                    ${rows.join('')}
+                </tbody> 
+            </table>
+        `;
     }
 }
