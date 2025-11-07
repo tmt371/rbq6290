@@ -1,6 +1,7 @@
 /* File: 04-core-code/ui/css/f2-summary-table.css */
 
 .f2-summary-grid {
+
     display: grid;
     /* Columns: A(label) B(value/input) C(value) */
     grid-template-columns: 1fr 1fr 1fr;
@@ -41,7 +42,8 @@
 .grid-cell-input {
     width: 100%;
     border: 1px solid #b0b8c4;
-    border-radius: 3px;
+    border-radius:
+        3px;
     text-align: right;
     padding-right: 6px;
     font-family: 'Courier New', Courier, monospace;
@@ -78,9 +80,10 @@
     font-size: 0.85em;
 }
 
-/* [NEW] Total 標籤的紅色文字 */
+/* [NEW] Total æ¨™ç±¤?„ç??²æ?å­?*/
 .text-red {
     color: #c0392b;
+
     /* Red */
 }
 
@@ -100,12 +103,12 @@
     /* Light yellow */
 }
 
-/* [NEW] new-offer 使用淡綠色 */
+/* [NEW] new-offer ä½¿ç”¨æ·¡ç???*/
 #new-offer {
     background-color: #dcfce7;
 }
 
-/* [NEW] (Phase 2) f2-b24-gst 使用淡藍色 */
+/* [NEW] (Phase 2) f2-b24-gst ä½¿ç”¨æ·¡è???*/
 #f2-b24-gst {
     background-color: #e0f7fa;
     /* Light Blue */
@@ -115,6 +118,7 @@
 #f2-label-gst {
     background-color: #e0f7fa;
     /* Light Blue */
+
     border-radius: 3px;
     padding: 4px 10px 4px 4px;
     cursor: pointer;
@@ -150,13 +154,27 @@
     color: #721c24;
 }
 
-/* [NEW] (Phase 2) Add exclusion style for GST */
+/* [NEW] (Phase 
+ 2) Add exclusion style for GST */
 #f2-label-gst.is-excluded,
 #f2-b24-gst.is-excluded {
     background-color: #f8d7da !important;
     /* Light pink */
     text-decoration: line-through;
     color: #721c24;
+}
+
+/* [NEW] v6290 Deposit/Balance styles */
+.bg-light-green {
+    background-color: #dcfce7;
+    /* Light green */
+    border-color: #86efac;
+}
+
+.bg-light-orange {
+    background-color: #ffedd5;
+    /* Light orange */
+    border-color: #fdbf71;
 }
 
 

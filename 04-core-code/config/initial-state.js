@@ -13,6 +13,7 @@ export const initialState = {
             'Price'],
         activeTabId: 'k1-tab',
 
+
         // --- Input & Selection State ---
         inputValue: '',
         inputMode: 'width',
@@ -24,6 +25,7 @@ export const initialState = {
 
         // --- Left Panel Edit Modes & States ---
         activeEditMode: null,
+
         targetCell: null,
         locationInputValue: '',
 
@@ -36,6 +38,7 @@ export const initialState = {
 
         // --- K5 (Dual/Chain) State ---
         dualChainMode: null,
+
         dualChainInputValue: '',
         dualPrice: null,
 
@@ -49,6 +52,7 @@ export const initialState = {
         driveWinderTotalPrice: null,
         driveMotorTotalPrice: null,
         driveRemoteTotalPrice: null,
+
         driveChargerTotalPrice: null,
         driveCordTotalPrice: null,
         driveGrandTotal: null,
@@ -80,14 +84,20 @@ export const initialState = {
 
             installFee: null, removalFee: null, deliveryFeeExcluded: false,
             installFeeExcluded: false, removalFeeExcluded: false, acceSum: null,
+
             eAcceSum: null, surchargeFee: null, totalSumForRbTime: null,
             firstRbPrice: null, disRbPrice: null, singleprofit: null,
             rbProfit: null,
             gst: null, netProfit: null,
+            // [v6290] Add Deposit and Balance
+            deposit: null,
+            balance: null,
+
             newOffer: null,
 
             // [FIX] Add missing keys from Phase 2
             f2_17_pre_sum: null,
+
             sumPrice: null,
             grandTotal: null,
 
@@ -99,6 +109,7 @@ export const initialState = {
         welcomeDialogShown: false
     },
     quoteData: {
+
         currentProduct: 'rollerBlind',
         products: {
             rollerBlind: {
@@ -107,29 +118,35 @@ export const initialState = {
                     {
                         itemId: `item-${Date.now()}`,
 
+
                         width: null, height: null, fabricType: null, linePrice: null,
                         location: '', fabric: '', color: '', over: '',
                         oi: '', lr: '', dual: '', chain: null,
+
                         winder: '',
                         motor: ''
                     }
                 ],
                 summary: {
+
                     totalSum: null,
 
                     accessories: {
                         winder: { count: 0, price: 0 },
                         motor: { count: 0, price: 0 },
 
+
                         remote: { type: 'standard', count: 0, price: 0 },
                         charger: { count: 0, price: 0 },
 
                         cord3m: { count: 0, price: 0 },
+
                         remoteCostSum: null,
                         winderCostSum: null,
 
                         motorCostSum: null,
                         chargerCostSum: null,
+
                         cordCostSum: null,
                     }
 
@@ -137,7 +154,8 @@ export const initialState = {
             }
         },
         // [ADDED] A new container for UI-related metadata that needs to be saved.
-        uiMetadata: {
+        uiMetadata:
+        {
             lfModifiedRowIndexes: []
         },
 
@@ -149,6 +167,7 @@ export const initialState = {
         customer: {
             name: "",
 
+
             address: "",
             phone: "",
             email: ""
@@ -157,6 +176,7 @@ export const initialState = {
         f1Snapshot: {
             // Main component quantities (calculated)
             winder_qty: null,
+
             motor_qty: null,
             charger_qty: null,
             cord_qty: null,
@@ -164,6 +184,7 @@ export const initialState = {
             remote_1ch_qty: null,
             remote_16ch_qty: null,
             dual_combo_qty: null,
+
             dual_slim_qty: null,
             // Financial values (from ui.f1)
             discountPercentage: null

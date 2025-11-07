@@ -14,11 +14,11 @@ export class F2SummaryView {
         this.stateService = stateService;
         this.calculationService = calculationService;
 
-        // [MODIFIED] (Phase 12) Move install-qty to the front of the sequence
+        // [MODIFIED] (Phase 12 & 13)
         this.f2InputSequence = [
             'f2-b14-install-qty', 'f2-b10-wifi-qty', 'f2-b13-delivery-qty',
             'f2-b15-removal-qty', 'f2-b17-mul-times', 'f2-b18-discount',
-            'new-offer'
+            'new-offer', 'f2-deposit' // 'f2-balance' is readonly, so no focus
         ];
 
         this._cacheF2Elements();
@@ -31,6 +31,7 @@ export class F2SummaryView {
         this.f2 = {
             b2_winderPrice: query('f2-b2-winder-price'),
             b3_dualPrice: query('f2-b3-dual-price'),
+
             b4_acceSum: query('f2-b4-acce-sum'),
             b6_motorPrice: query('f2-b6-motor-price'),
             b7_remotePrice: query('f2-b7-remote-price'),
@@ -39,6 +40,7 @@ export class F2SummaryView {
             b10_wifiQty: query('f2-b10-wifi-qty'),
             c10_wifiSum: query('f2-c10-wifi-sum'),
             b11_eAcceSum: query('f2-b11-e-acce-sum'),
+
             b13_deliveryQty: query('f2-b13-delivery-qty'),
             c13_deliveryFee: query('f2-c13-delivery-fee'),
             b14_installQty: query('f2-b14-install-qty'),
@@ -46,6 +48,7 @@ export class F2SummaryView {
             b15_removalQty: query('f2-b15-removal-qty'),
             c15_removalFee: query('f2-c15-removal-fee'),
             b16_surchargeFee: query('f2-b16-surcharge-fee'),
+
             a17_totalSum: query('f2-a17-total-sum'),
             b17_mulTimes: query('f2-b17-mul-times'),
             c17_1stRbPrice: query('f2-c17-1st-rb-price'),
@@ -54,13 +57,19 @@ export class F2SummaryView {
             b20_singleprofit: query('f2-b20-singleprofit'),
             f2_17_pre_sum: query('f2-17-pre-sum'), // [MODIFIED]
             b21_rbProfit: query('f2-b21-rb-profit'),
+
             b22_sumprice: query('f2-b22-sumprice'),
             // [REMOVED] b23_sumprofit: query('f2-b23-sumprofit'),
             new_offer: query('new-offer'), // [MODIFIED]
             label_gst: query('f2-label-gst'), // [NEW] (Phase 2)
             b24_gst: query('f2-b24-gst'),
             grand_total: query('grand-total'), // [MODIFIED]
+
             b25_netprofit: query('f2-b25-netprofit'),
+
+            // [NEW] v6290 Deposit/Balance
+            deposit: query('f2-deposit'),
+            balance: query('f2-balance'),
         };
     }
 
@@ -83,11 +92,13 @@ export class F2SummaryView {
         const f2Inputs = [
             this.f2.b10_wifiQty, this.f2.b13_deliveryQty, this.f2.b14_installQty,
             this.f2.b15_removalQty, this.f2.b17_mulTimes, this.f2.b18_discount,
-            this.f2.new_offer // [NEW] Add listener for new-offer
+            this.f2.new_offer, // [NEW] Add listener for new-offer
+            this.f2.deposit // [NEW] v6290 Add listener for deposit
         ];
         f2Inputs.forEach(input => setupF2InputListener(input));
 
         const feeCells = [
+
             { el: this.f2.c13_deliveryFee, type: 'delivery' },
             { el: this.f2.c14_installFee, type: 'install' },
             { el: this.f2.c15_removalFee, type: 'removal' }
@@ -95,6 +106,7 @@ export class F2SummaryView {
         feeCells.forEach(({ el, type }) => {
             if (el) {
                 el.addEventListener('click', () => {
+
                     this.handleToggleFeeExclusion({ feeType: type });
                 });
             }
@@ -103,6 +115,7 @@ export class F2SummaryView {
         // [NEW] (Phase 2) Add listener for GST toggle
         if (this.f2.label_gst) {
             this.f2.label_gst.addEventListener('click', () => {
+
                 this.handleToggleGstExclusion();
             });
         }
@@ -181,6 +194,13 @@ export class F2SummaryView {
             this.f2.new_offer.value = formatValue(newOfferValue);
         }
 
+        // [NEW] v6290 Render Deposit and Balance
+        if (document.activeElement !== this.f2.deposit) {
+            this.f2.deposit.value = formatValue(f2State.deposit);
+        }
+        // Balance is read-only, so no need to check activeElement
+        this.f2.balance.value = formatValue(f2State.balance);
+
 
         this.f2.c13_deliveryFee.classList.toggle('is-excluded', f2State.deliveryFeeExcluded);
         this.f2.c14_installFee.classList.toggle('is-excluded', f2State.installFeeExcluded);
@@ -202,6 +222,7 @@ export class F2SummaryView {
         // [NEW] (Phase 12) Auto-populate install Qty if it's null
         if (ui.f2.installQty === null) {
             // We use updatedQuoteData.products... to get the most current item list
+
             const items = updatedQuoteData.products[updatedQuoteData.currentProduct].items;
             const defaultInstallQty = items.length > 0 ? items.length - 1 : 0;
             if (defaultInstallQty >= 0) {
@@ -239,6 +260,7 @@ export class F2SummaryView {
             case 'f2-b17-mul-times': keyToUpdate = 'mulTimes'; break;
             case 'f2-b18-discount': keyToUpdate = 'discount'; break;
             case 'new-offer': keyToUpdate = 'newOffer'; break; // [NEW]
+            case 'f2-deposit': keyToUpdate = 'deposit'; break; // [NEW] v6290
         }
 
         if (keyToUpdate) {
@@ -289,8 +311,32 @@ export class F2SummaryView {
         // We let the `render` function read `summaryValues.newOffer` if `f2State.newOffer` is null.
 
         this.stateService.dispatch(uiActions.setF2Value('gst', summaryValues.new_gst)); // Dispatch new_gst to 'gst' state
+
         this.stateService.dispatch(uiActions.setF2Value('grandTotal', summaryValues.grandTotal));
         this.stateService.dispatch(uiActions.setF2Value('netProfit', summaryValues.netProfit));
+
+        // [NEW] v6290 Calculate and dispatch Deposit and Balance
+        const currentGrandTotal = summaryValues.grandTotal || 0;
+        const previousGrandTotalInState = ui.f2.grandTotal;
+        const grandTotalChanged = currentGrandTotal !== previousGrandTotalInState;
+
+        const autoDeposit = Math.ceil(Math.ceil(currentGrandTotal / 2) / 10) * 10;
+        const currentDepositInState = ui.f2.deposit;
+
+        let finalDeposit;
+        if (grandTotalChanged) {
+            // Rule 3C: grandTotal changed, force recalculation
+            finalDeposit = autoDeposit;
+        } else {
+            // grandTotal did not change. Keep user's value if it exists, otherwise use auto-calc.
+            finalDeposit = (currentDepositInState !== null && currentDepositInState !== undefined) ? currentDepositInState : autoDeposit;
+        }
+
+        // Rule 4: Balance = grandTotal - deposit
+        const finalBalance = currentGrandTotal - finalDeposit;
+
+        this.stateService.dispatch(uiActions.setF2Value('deposit', finalDeposit));
+        this.stateService.dispatch(uiActions.setF2Value('balance', finalBalance));
 
         // [REMOVED] The faulty for...in loop is now gone.
     }
