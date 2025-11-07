@@ -235,7 +235,7 @@ export class QuoteGeneratorService {
             // Ensure customer info is formatted
             customerInfoHtml: this._formatCustomerInfo(templateData),
             // [MODIFIED v6290 Task 1] Ensure item list is formatted
-            itemsTableBody: this._generatePageOneItemsTableHtml(templateData),
+            itemsTableBody: this._generatePageOneItemsTableHtml_GTH(templateData),
             // [NEW v6290 Task 2] Pass the conditional GST row
             gstRowHtml: gstRowHtml
         });
@@ -282,7 +282,7 @@ export class QuoteGeneratorService {
             ...templateData,
             customerInfoHtml: this._formatCustomerInfo(templateData),
             // [MODIFIED v6290 Task 1] Use the single-table generator
-            itemsTableBody: this._generatePageOneItemsTableHtml(templateData),
+            itemsTableBody: this._generatePageOneItemsTableHtml_Original(templateData),
             rollerBlindsTable: this._generateItemsTableHtml(templateData),
             gstRowHtml: gstRowHtml // [NEW] Pass the conditional GST row
         };
@@ -423,8 +423,9 @@ export class QuoteGeneratorService {
         `;
     }
 
-    // [MODIFIED v6290 Task 1] Rewritten function to generate a single table
-    _generatePageOneItemsTableHtml(templateData) {
+    // [NEW v6290 Task 1] This is the new function for "Original" (Add Quote)
+    // It generates a SINGLE table
+    _generatePageOneItemsTableHtml_Original(templateData) {
         const { summaryData, uiState, items } = templateData;
         const rows = [];
         const validItemCount = items.filter(i => i.width && i.height).length;
@@ -540,5 +541,143 @@ export class QuoteGeneratorService {
                 </tbody> 
             </table>
         `;
+    }
+
+    // [NEW v6290 Task 1] This is the restored function for GTH
+    // It generates MULTIPLE tables (cards)
+    _generatePageOneItemsTableHtml_GTH(templateData) {
+        const { summaryData, uiState, items } = templateData;
+        const rows = [];
+        const validItemCount = items.filter(i => i.width && i.height).length;
+
+        // [MODIFIED v6290] Use new helper function to build rows
+        const createRow = (number, description, qty, price, discountedPrice, isExcluded = false) => {
+            const priceStyle = isExcluded ? 'style="text-decoration: line-through; color: #999999;"' : '';
+            const discountedPriceValue = isExcluded ? 0 : discountedPrice;
+            // [MODIFIED] Show red only if discount is applied
+            const discountedPriceStyle = (discountedPrice < price) ? 'style="font-weight: bold; color: #d32f2f;"' : '';
+
+            return `
+                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+                    style="border-collapse: collapse; margin-bottom: 15px; border: 1px solid #e0e0e0; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                    <tbody>
+                        <tr>
+                            <td
+                                style="padding: 10px 15px; border-bottom: 1px solid #e0e0e0; background-color: #1a237e; color: white; border-radius: 4px 4px 0 0;">
+                                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="color: white;">
+                                    <tr>
+                                        <td width="50%" valign="top" style="text-align: left; font-weight: bold;">#${number}</td>
+                                        <td width="50%" valign="top" style="text-align: right; font-weight: normal;">${description}</td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px 15px; border-bottom: 1px solid #e0e0e0;">
+                                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                    <tr>
+                                        <td width="50%" valign="top" style="text-align: left; font-weight: 600;">QTY</td>
+                                        <td width="50%" valign="top" style="text-align: right;">${qty}</td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px 15px; border-bottom: 1px solid #e0e0e0;">
+                                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                    <tr>
+                                        <td width="50%" valign="top" style="text-align: left; font-weight: 600;">Price</td>
+                                        <td width="50%" valign="top" style="text-align: right;">
+                                            <span ${priceStyle}>$${price.toFixed(2)}</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px 15px;">
+                                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                    <tr>
+                                        <td width="50%" valign="top" style="text-align: left; font-weight: 600;">Discounted Price</td>
+                                        <td width="50%" valign="top" style="text-align: right;">
+                                            <span ${discountedPriceStyle}>$${discountedPriceValue.toFixed(2)}</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+        };
+
+        let itemNumber = 1;
+
+        // Row 1: Roller Blinds
+        rows.push(createRow(
+            itemNumber++,
+            'Roller Blinds',
+            validItemCount,
+            summaryData.firstRbPrice || 0,
+            summaryData.disRbPrice || 0
+        ));
+
+        // Row 2: Accessories (Optional)
+        if (summaryData.acceSum > 0) {
+            rows.push(createRow(
+                itemNumber++,
+                'Installation Accessories',
+                'NA',
+                summaryData.acceSum || 0,
+                summaryData.acceSum || 0
+            ));
+        }
+
+        // Row 3: Motorised (Optional)
+        if (summaryData.eAcceSum > 0) {
+            rows.push(createRow(
+                itemNumber++,
+                'Motorised Accessories',
+                'NA',
+                summaryData.eAcceSum || 0,
+                summaryData.eAcceSum || 0
+            ));
+        }
+
+        // Row 4: Delivery
+        const deliveryExcluded = uiState.f2.deliveryFeeExcluded;
+        rows.push(createRow(
+            itemNumber++,
+            'Delivery',
+            uiState.f2.deliveryQty || 1,
+            summaryData.deliveryFee || 0,
+            summaryData.deliveryFee || 0,
+            deliveryExcluded
+        ));
+
+        // Row 5: Installation
+        // [MODIFIED v6290 Bug 1 Fix]
+        const installExcluded = uiState.f2.installFeeExcluded;
+        rows.push(createRow(
+            itemNumber++,
+            'Installation',
+            uiState.f2.installQty || 0, // Use installQty from F2 state
+            summaryData.installFee || 0,
+            summaryData.installFee || 0,
+            installExcluded
+        ));
+
+        // Row 6: Removal
+        const removalExcluded = uiState.f2.removalFeeExcluded;
+        rows.push(createRow(
+            itemNumber++,
+            'Removal',
+            uiState.f2.removalQty || 0,
+            summaryData.removalFee || 0,
+            summaryData.removalFee || 0,
+            removalExcluded
+        ));
+
+        return rows.join('');
     }
 }

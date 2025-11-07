@@ -271,13 +271,13 @@
         }
 
         .summary-payment-wrapper .layout-cell-summary {
-            padding-right: 10px;
-            /* Gap on the right */
+            padding-left: 10px;
+            /* Gap on the left */
         }
 
         .summary-payment-wrapper .layout-cell-payment {
-            padding-left: 10px;
-            /* Gap on the left */
+            padding-right: 10px;
+            /* Gap on the right */
         }
 
 
@@ -373,6 +373,9 @@
             font-size: 12px;
             margin-top: 15px;
             font-style: italic;
+            /* [NEW v6290 Task 3] Added text wrapping */
+            white-space: normal;
+            word-wrap: break-word;
         }
 
         /* End of new payment styles */
@@ -433,7 +436,7 @@
                 align-items: stretch;
             }
 
-            /* [MODIFIED v6290 Task 1] Swapped order */
+            /* [MODIFIED v6290 Task 2] Swapped order */
             .quotation-meta {
                 order: 2;
             }
@@ -489,7 +492,7 @@
             }
 
 
-            /* [MODIFIED v6290 Task 2 - User Req 2] Added min-width and box-sizing */
+            /* [MODIFIED v6290 Task 4] Added min-width and box-sizing */
             .payment-info,
             .summary-section {
                 width: 100%;
@@ -498,7 +501,7 @@
                 /* X */
             }
 
-            /* [MODIFIED v6290 Task 2 - User Req 2] Added min-width and box-sizing */
+            /* [MODIFIED v6290 Task 4] Added min-width and box-sizing */
             .notes-terms-box {
                 width: 100%;
                 min-width: 280px;
@@ -714,41 +717,6 @@
                 <table class="summary-payment-wrapper" border="0" cellpadding="0" cellspacing="0" width="100%">
                     <tbody>
                         <tr>
-                            <td class="layout-cell layout-cell-summary" width="50%">
-                                <section class="summary-section">
-                                    <div class="summary-details">
-                                        <table>
-                                            <tbody>
-                                                <tr>
-                                                    <td class="summary-label">Subtotal</td>
-                                                    <td class="summary-value">{{subtotal}}</td>
-                                                </tr>
-                                                <tr class="grand-total">
-                                                    <td class="summary-label">Our Offer</td>
-                                                    <td class="summary-value">{{grandTotal}}</td>
-                                                </tr>
-
-                                                {{{gstRowHtml}}}
-
-                                                <tr class="grand-total" style="color: #FF69B4; border-color: #FF69B4;">
-                                                    <td class="summary-label" style="color: #FF69B4;">Total</td>
-                                                    <td class="summary-value" style="color: #FF69B4;">{{grandTotal}}
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="summary-label">Deposit</td>
-                                                    <td class="summary-value">{{deposit}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="summary-label"><strong>Balance</strong></td>
-                                                    <td class="summary-value"><strong>{{balance}}</strong></td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-
-                                    </div>
-                                </section>
-                            </td>
                             <td class="layout-cell layout-cell-payment" width="50%">
                                 <section class="payment-info">
                                     <h4>Payment Method</h4>
@@ -791,6 +759,41 @@
 
                                     <p class="payment-reference-text"><em>Please leave your Ph. number as Ref. in the
                                             transaction.</em></p>
+                                </section>
+                            </td>
+                            <td class="layout-cell layout-cell-summary" width="50%">
+                                <section class="summary-section">
+                                    <div class="summary-details">
+                                        <table>
+                                            <tbody>
+                                                <tr>
+                                                    <td class="summary-label">Subtotal</td>
+                                                    <td class="summary-value">{{subtotal}}</td>
+                                                </tr>
+                                                <tr class="grand-total">
+                                                    <td class="summary-label">Our Offer</td>
+                                                    <td class="summary-value">{{grandTotal}}</td>
+                                                </tr>
+
+                                                {{{gstRowHtml}}}
+
+                                                <tr class="grand-total" style="color: #FF69B4; border-color: #FF69B4;">
+                                                    <td class="summary-label" style="color: #FF69B4;">Total</td>
+                                                    <td class="summary-value" style="color: #FF69B4;">{{grandTotal}}
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="summary-label">Deposit</td>
+                                                    <td class="summary-value">{{deposit}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="summary-label"><strong>Balance</strong></td>
+                                                    <td class="summary-value"><strong>{{balance}}</strong></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+
+                                    </div>
                                 </section>
                             </td>
                         </tr>
